@@ -2,37 +2,30 @@
 
 [中文](./README.md) | [English](./README.en.md)
 
-`PageForge` 是一个面向企业官网场景的开源建站 MVP，包含：
+`PageForge` 是一个面向企业官网场景的开源建站 MVP，核心能力是：
 
-- 企业官网模板库
-- 模块化拖拽编辑器
-- 多页面站点结构
-- 草稿 / 发布流程
-- 新闻中心与富文本编辑
+- 行业模板初始化
+- 多页面企业官网生成
+- 模块化拖拽编辑
+- 站点级公共设置
+- 新闻中心与富文本内容管理
 
-当前目标不是自由画布，而是先把“企业官网模板 + 可维护的模块编辑器”这条链路做通。
+当前目标不是自由画布，而是先把“企业官网模板 + 模块化编辑器”这条链路做通。
 
-## 项目特性
+## 功能概览
 
 - 基于 `Next.js App Router + TypeScript`
 - 使用 `Tailwind CSS` 构建界面
 - 使用 `PostgreSQL + Prisma` 存储页面与新闻数据
-- 使用 `Zod` 做页面 JSON schema 校验
+- 使用 `Zod` 校验页面 JSON schema
 - 使用 `dnd-kit` 实现模块拖拽排序
-- 每个 block 都具备 `component + defaultProps + zod schema`
-- 页面内容统一存储为结构化 JSON
+- 每个 block 都包含 `component + defaultProps + zod schema`
+- 支持站点级发布，不是单页单独发布
+- 支持新闻分类管理、新闻详情页、富文本编辑
 
-## 适用场景
+## 默认页面结构
 
-适合下面这些场景快速起步：
-
-- 企业官网
-- SaaS 官网
-- 企业服务公司官网
-- 制造业官网
-- 研发 / 技术平台型官网
-
-当前模板默认覆盖这些标准页面：
+模板默认围绕企业官网常见结构生成独立页面：
 
 - 首页
 - 服务与产品
@@ -42,40 +35,11 @@
 - 联系我们
 
 说明：
+
 - `技术研发` 可按需启用
 - 每个页面都是独立页面，不是单页锚点
 
-## 当前能力
-
-目前已完成的 MVP 能力：
-
-- 行业模板选择与整站初始化
-- 页面列表、新建页面、删除页面
-- 模块新增、删除、拖拽排序、折叠
-- 右侧属性面板编辑模块内容
-- 右侧公共设置编辑站点信息、导航、公共底部
-- 整站发布
-- 顶部导航与公共底部预览
-- 新闻中心
-- 新闻分类增删改查
-- 新闻富文本编辑
-- 图片 / 视频上传插入
-- 粘贴富文本图片 / 视频内容
-
-## 技术栈
-
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- PostgreSQL
-- Prisma
-- Zod
-- dnd-kit
-- wangEditor
-- Radix UI
-
-## 本地开发环境
+## 本地环境要求
 
 请先安装：
 
@@ -83,12 +47,6 @@
 - npm 10+
 - PostgreSQL 16+
 - Git
-
-推荐本地数据库配置：
-
-1. 创建数据库 `pageforge`
-2. 确保 PostgreSQL 监听在 `localhost:5432`
-3. 准备一个可连接的数据库账号，例如 `postgres`
 
 ## 环境变量
 
@@ -98,13 +56,19 @@
 copy .env.example .env
 ```
 
-默认配置如下：
+默认示例：
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/pageforge?schema=public"
+DATABASE_URL="postgresql://postgres:123456@localhost:5432/pageforge?schema=public"
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="change-this-password"
 ```
 
-如果你的数据库用户名、密码或端口不同，改成你自己的连接串即可。
+说明：
+
+- `DATABASE_URL` 用于连接 PostgreSQL
+- `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 用于保护后台管理入口
+- 如果不填写管理员账号密码，后台不会启用基础认证保护
 
 ## 本地启动
 
@@ -120,123 +84,53 @@ npm run dev
 
 启动后访问：
 
-- 编辑器入口：`http://localhost:3000/editor`
+- 站点首页：`http://localhost:3000/`
+- 页面管理：`http://localhost:3000/editor`
 - 页面编辑：`http://localhost:3000/editor/pages/homepage`
 - 新闻中心：`http://localhost:3000/editor/newsroom`
-- 站点预览：`http://localhost:3000/sites/homepage`
 
-## 使用说明
+## 访问路径说明
 
-推荐使用流程：
+为了更符合真实企业官网部署方式，项目已经做了前后台分离：
 
-1. 打开 `/editor`
-2. 选择行业模板
-3. 选择要生成的页面
-4. 进入页面编辑器
-5. 在左侧添加模块，在中间画布拖拽排序
-6. 在右侧编辑模块设置或公共设置
-7. 点击“发布整站”
+- `/` 默认跳转到已发布首页，也就是 `/sites/homepage`
+- `/editor` 是管理后台
+- `/editor/newsroom` 是新闻后台
 
-### 模块设置
+这意味着：
 
-在右侧 `模块设置` 中可以修改：
+- 访客访问 `https://你的域名`，看到的是官网首页
+- 管理人员访问 `https://你的域名/editor`，进入后台
 
-- Hero 文案与背景图
-- 服务模块内容
-- 技术模块内容
-- 新闻模块内容
-- 联系模块内容
-- CTA 模块内容
+## 如何避免访客看到配置页
 
-### 公共设置
+项目内已经提供一层基础保护：
 
-在右侧 `公共设置` 中可以修改：
+- 根域名 `/` 不再显示编辑入口，而是直接进入已发布首页
+- 只要配置了 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD`，访问 `/editor` 和相关管理 API 时就会触发基础认证
 
-- 站点名称
-- 副标题
-- Logo
-- Favicon
-- 导航菜单显示与顺序
-- 公共底部样式
-- 公司地址、电话、邮箱、备案号、版权文案
+适合当前 MVP 的上线方式：
 
-## 新闻中心
+1. 根域名直接提供公开官网访问
+2. 管理人员使用 `/editor` 进入后台
+3. 通过 Basic Auth 做第一层权限保护
 
-新闻后台位于：
+如果后续要正式商用，建议继续升级为：
 
-- `http://localhost:3000/editor/newsroom`
-
-当前支持：
-
-- 创建新闻草稿
-- 发布新闻
-- 删除新闻
-- 新闻分页
-- 草稿 / 已发布筛选
-- 新闻分类管理
-- 富文本正文编辑
-- 上传图片 / 视频
-- 粘贴图片 / 视频
-
-说明：
-- 新闻列表页与新闻详情页共用同一份封面图数据
-- 分类被新闻占用时不可删除
-
-## 项目结构
-
-核心目录说明：
-
-```text
-app/
-  api/                    接口路由
-  editor/                 编辑器与新闻后台
-  news/                   前台新闻详情页
-  sites/                  前台站点页面
-
-components/
-  blocks/                 各类模块组件
-  builder/                编辑器相关组件
-  news/                   新闻后台组件
-  site/                   站点壳子（Header / Footer）
-
-lib/
-  builder/                页面 schema、block registry、模板库
-  news/                   新闻领域逻辑
-  prisma.ts               Prisma 客户端
-
-prisma/
-  schema.prisma           数据模型
-  seed.ts                 初始数据
-
-public/
-  hero/                   Hero 背景图
-  brand/                  默认品牌资源
-```
-
-## 如何交给别人使用
-
-如果你要把这个项目发给别人本地运行：
-
-```bash
-git clone <your-repo-url>
-cd PageForge
-copy .env.example .env
-npm install
-npm run prisma:generate
-npm run prisma:push
-npm run db:seed
-npm run dev
-```
-
-对方需要准备：
-
-- Node.js 22
-- PostgreSQL
-- 一个可用的 `DATABASE_URL`
+- 账号登录系统
+- Session / JWT 鉴权
+- 管理员角色权限
+- 上传文件改为对象存储
 
 ## 生产部署
 
-推荐部署流程：
+常见部署方式：
+
+- `Vercel + Neon / Supabase / PostgreSQL`
+- 自建 `Node.js + PostgreSQL`
+- `Docker + PostgreSQL`
+
+生产环境部署步骤通常是：
 
 ```bash
 npm install
@@ -246,39 +140,52 @@ npm run build
 npm run start
 ```
 
-生产环境变量示例：
+同时在生产环境配置：
 
-```env
-DATABASE_URL="postgresql://<user>:<password>@<host>:5432/pageforge?schema=public"
+- `DATABASE_URL`
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+
+## 编辑器使用流程
+
+推荐使用方式：
+
+1. 打开 `/editor`
+2. 选择行业模板
+3. 勾选要生成的独立页面
+4. 进入某个页面开始拖拽编辑
+5. 在右侧修改模块设置或公共设置
+6. 完成后点击“发布整站”
+
+## 新闻中心
+
+新闻中心当前支持：
+
+- 新闻分类增删改查
+- 新闻列表分页
+- 草稿 / 发布筛选
+- 删除新闻
+- 富文本正文编辑
+- 插入图片和视频
+- 粘贴带图片或视频的富文本内容
+
+## 项目结构
+
+```text
+app/                     Next.js 路由
+components/              页面组件与编辑器组件
+lib/builder/             页面搭建器 schema、registry、模板库
+lib/news/                新闻中心服务
+prisma/                  Prisma schema 与 seed
+public/                  静态资源
 ```
-
-推荐部署方式：
-
-- Vercel + Neon / Supabase / PostgreSQL
-- 自建 Node.js 服务 + PostgreSQL
-- Docker + PostgreSQL
 
 ## 开源建议
 
-如果你准备开源，建议至少补上这些内容：
+如果你准备把它作为开源项目发布，建议同时补上：
 
-- 开源许可证，例如 `MIT`
-- `CONTRIBUTING.md`
 - `LICENSE`
-- Issue Template / PR Template
-- 项目路线图
+- `CONTRIBUTING.md`
+- `CHANGELOG.md`
+- GitHub Issue / PR 模板
 
-## 开发原则
-
-本项目当前遵循这些原则：
-
-- 先做 MVP，不做自由画布
-- 采用模块化 block / section 架构
-- 页面数据使用 JSON schema 存储
-- 优先保证结构正确，再优化视觉
-- 避免大而乱的单文件
-- 每次只推进一个明确子模块
-
-## License
-
-当前仓库还没有单独添加许可证文件。若你准备正式开源，建议补充 `MIT` 或 `Apache-2.0`。

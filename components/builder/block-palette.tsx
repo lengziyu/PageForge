@@ -71,7 +71,10 @@ function MiniServicePreview() {
       <div className="mt-2 h-2 w-3/4 rounded bg-slate-200" />
       <div className="mt-3 grid grid-cols-3 gap-2">
         {[0, 1, 2].map((item) => (
-          <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-[0_8px_16px_rgba(15,23,42,0.04)]" key={item}>
+          <div
+            className="rounded-lg border border-slate-200 bg-white p-2 shadow-[0_8px_16px_rgba(15,23,42,0.04)]"
+            key={item}
+          >
             <div className="h-5 w-5 rounded-md bg-slate-900/90" />
             <div className="mt-2 h-2 w-4/5 rounded bg-slate-300" />
             <div className="mt-2 h-2 w-full rounded bg-slate-200" />
@@ -107,7 +110,10 @@ function MiniNewsPreview() {
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <div className="space-y-2">
         {[0, 1].map((item) => (
-          <div className="grid grid-cols-[90px_56px_minmax(0,1fr)_28px] gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2" key={item}>
+          <div
+            className="grid grid-cols-[90px_56px_minmax(0,1fr)_28px] gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2"
+            key={item}
+          >
             <div className="h-14 rounded-md bg-slate-200" />
             <div>
               <div className="h-4 w-10 rounded bg-slate-300" />
@@ -232,8 +238,8 @@ function DraggablePaletteItem({
       type="button"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-semibold text-slate-950">{label}</span>
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition group-hover:border-indigo-300 group-hover:text-indigo-700">
+        <span className="min-w-0 text-sm font-semibold text-slate-950">{label}</span>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition group-hover:border-indigo-300 group-hover:text-indigo-700">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24">
             <path
               d="M12 5v14M5 12h14"
@@ -246,7 +252,7 @@ function DraggablePaletteItem({
         </span>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 overflow-hidden">
         <BlockPreview type={type} />
       </div>
     </button>
@@ -255,7 +261,7 @@ function DraggablePaletteItem({
 
 export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
   return (
-    <aside className="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
+    <aside className="overflow-x-hidden rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
       <div className="mb-4">
         <p className="text-xs uppercase tracking-[0.24em] text-slate-500">模块库</p>
         <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
@@ -266,7 +272,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
         </p>
       </div>
 
-      <div className="grid gap-3 xl:max-h-[calc(100vh-11rem)] xl:overflow-y-auto xl:pr-1">
+      <div className="grid gap-3 overflow-x-hidden xl:max-h-[calc(100vh-11rem)] xl:overflow-y-auto xl:pr-1">
         {blockDefinitions.map((block) => (
           <DraggablePaletteItem
             key={block.type}

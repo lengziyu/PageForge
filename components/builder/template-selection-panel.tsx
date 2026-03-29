@@ -96,7 +96,7 @@ export function TemplateSelectionPanel({
         <p className="text-xs uppercase tracking-[0.24em] text-slate-500">生成内容</p>
         <h3 className="mt-2 text-2xl font-semibold text-slate-950">{selectedTemplate.name}</h3>
         <p className="mt-2 text-sm leading-7 text-slate-600">
-          先勾选要生成的独立页面，再选择公共页脚样式。首页会作为整站总览页，其他页面都是独立页面，不是单页锚点。
+          先勾选要生成的独立页面，再选择公共页脚样式。首页会作为整站总览页，其它页面都是独立页面，不是单页锚点。
         </p>
 
         <div className="mt-5 space-y-3">
@@ -144,13 +144,13 @@ export function TemplateSelectionPanel({
             <p className="text-sm font-semibold text-slate-900">公共页脚样式</p>
             <span className="text-xs text-slate-500">所有页面共用</span>
           </div>
-          <div className="grid gap-3">
+          <div className="flex flex-wrap gap-2">
             {footerTemplateCatalog.map((template) => {
               const isActive = selectedFooterTemplate === template.id;
 
               return (
                 <button
-                  className={`rounded-lg border p-4 text-left transition ${
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
                     isActive
                       ? "border-slate-900 bg-slate-950 text-white"
                       : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"
@@ -159,23 +159,7 @@ export function TemplateSelectionPanel({
                   onClick={() => onFooterTemplateChange(template.id)}
                   type="button"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold">{template.name}</span>
-                    <span
-                      className={`text-[11px] uppercase tracking-[0.18em] ${
-                        isActive ? "text-white/70" : "text-slate-400"
-                      }`}
-                    >
-                      footer
-                    </span>
-                  </div>
-                  <p
-                    className={`mt-2 text-xs leading-6 ${
-                      isActive ? "text-white/75" : "text-slate-500"
-                    }`}
-                  >
-                    {template.description}
-                  </p>
+                  {template.name}
                 </button>
               );
             })}

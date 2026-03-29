@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   closestCenter,
@@ -46,7 +46,7 @@ function getStatusLabel(status: BuilderPageStatus) {
   return status === "PUBLISHED" ? "已发布" : "草稿";
 }
 
-function CanvasDropzone({ children }: { children: React.ReactNode }) {
+function CanvasDropzone({ children }: { children: ReactNode }) {
   const { isOver, setNodeRef } = useDroppable({
     id: "canvas-dropzone",
   });
@@ -357,6 +357,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
         sections: arrayMove(currentDocument.sections, oldIndex, newIndex),
       };
     });
+
     setStatusMessage("已更新模块顺序。");
   };
 
@@ -599,9 +600,9 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                 )}
               </div>
             ) : (
-              <aside className="flex min-h-[240px] items-start justify-center rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <aside className="flex min-h-[140px] items-start justify-center rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
                 <button
-                  className="flex h-full min-h-[210px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-sm font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700"
+                  className="flex min-h-[68px] w-full items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-sm font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700"
                   onClick={() => setIsInspectorOpen(true)}
                   type="button"
                 >
