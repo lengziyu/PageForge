@@ -2,30 +2,30 @@
 
 [中文](./README.md) | [English](./README.en.md)
 
-`PageForge` 是一个面向企业官网场景的开源建站 MVP，核心能力是：
+`PageForge` 是一个面向企业官网场景的开源建站 MVP，重点是：
 
 - 行业模板初始化
 - 多页面企业官网生成
 - 模块化拖拽编辑
 - 站点级公共设置
-- 新闻中心与富文本内容管理
+- 新闻中心与富文本管理
 
-当前目标不是自由画布，而是先把“企业官网模板 + 模块化编辑器”这条链路做通。
+当前版本默认使用 `SQLite + Prisma`，部署门槛更低，不需要单独安装 PostgreSQL。
 
 ## 功能概览
 
 - 基于 `Next.js App Router + TypeScript`
-- 使用 `Tailwind CSS` 构建界面
-- 使用 `PostgreSQL + Prisma` 存储页面与新闻数据
+- 使用 `Tailwind CSS`
+- 使用 `SQLite + Prisma`
 - 使用 `Zod` 校验页面 JSON schema
-- 使用 `dnd-kit` 实现模块拖拽排序
+- 使用 `dnd-kit` 做模块拖拽排序
 - 每个 block 都包含 `component + defaultProps + zod schema`
-- 支持站点级发布，不是单页单独发布
-- 支持新闻分类管理、新闻详情页、富文本编辑
+- 支持整站发布
+- 支持新闻分类、新闻详情、富文本图文视频内容
 
-## 默认页面结构
+## 默认页面
 
-模板默认围绕企业官网常见结构生成独立页面：
+模板围绕常见企业官网结构生成独立页面：
 
 - 首页
 - 服务与产品
@@ -39,13 +39,12 @@
 - `技术研发` 可按需启用
 - 每个页面都是独立页面，不是单页锚点
 
-## 本地环境要求
+## 本地环境
 
 请先安装：
 
-- Node.js 22 LTS
+- Node.js 20+ 或 22 LTS
 - npm 10+
-- PostgreSQL 16+
 - Git
 
 ## 环境变量
@@ -59,20 +58,18 @@ copy .env.example .env
 默认示例：
 
 ```env
-DATABASE_URL="postgresql://postgres:123456@localhost:5432/pageforge?schema=public"
+DATABASE_URL="file:./dev.db"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="change-this-password"
 ```
 
 说明：
 
-- `DATABASE_URL` 用于连接 PostgreSQL
-- `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 用于保护后台管理入口
-- 如果不填写管理员账号密码，后台不会启用基础认证保护
+- `DATABASE_URL` 默认指向 `prisma/dev.db`
+- `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 用于后台登录页
+- 如果不设置管理员账号密码，后台登录保护不会启用
 
 ## 本地启动
-
-在项目根目录执行：
 
 ```bash
 npm install
@@ -84,55 +81,30 @@ npm run dev
 
 启动后访问：
 
-- 站点首页：`http://localhost:3000/`
-- 页面管理：`http://localhost:3000/editor`
+- 官网首页：`http://localhost:3000/`
+- 后台入口：`http://localhost:3000/editor`
 - 页面编辑：`http://localhost:3000/editor/pages/homepage`
 - 新闻中心：`http://localhost:3000/editor/newsroom`
 
-## 访问路径说明
+## 前后台访问方式
 
-为了更符合真实企业官网部署方式，项目已经做了前后台分离：
-
-- `/` 默认跳转到已发布首页，也就是 `/sites/homepage`
-- `/editor` 是管理后台
+- `/` 默认进入已发布官网首页
+- `/editor` 是后台管理入口
+- `/admin/login` 是后台登录页
 - `/editor/newsroom` 是新闻后台
 
-这意味着：
-
-- 访客访问 `https://你的域名`，看到的是官网首页
-- 管理人员访问 `https://你的域名/editor`，进入后台
-
-## 如何避免访客看到配置页
-
-项目内已经提供一层基础保护：
-
-- 根域名 `/` 不再显示编辑入口，而是直接进入已发布首页
-- 只要配置了 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD`，访问 `/editor` 和相关管理 API 时就会触发基础认证
-
-适合当前 MVP 的上线方式：
-
-1. 根域名直接提供公开官网访问
-2. 管理人员使用 `/editor` 进入后台
-3. 通过 Basic Auth 做第一层权限保护
-
-如果后续要正式商用，建议继续升级为：
-
-- 账号登录系统
-- Session / JWT 鉴权
-- 管理员角色权限
-- 上传文件改为对象存储
+只要配置了 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD`，访问 `/editor` 就会先跳到登录页，登录成功后再进入后台。
 
 ## 生产部署
 
-常见部署方式：
+现在默认是 SQLite 方案，部署会简单很多。
 
-- `Vercel + Neon / Supabase / PostgreSQL`
-- 自建 `Node.js + PostgreSQL`
-- `Docker + PostgreSQL`
-
-生产环境部署步骤通常是：
+生产环境最小流程：
 
 ```bash
+git clone https://github.com/lengziyu/PageForge.git /opt/apps/PageForge
+cd /opt/apps/PageForge
+cp .env.example .env
 npm install
 npm run prisma:generate
 npm run prisma:push
@@ -140,22 +112,24 @@ npm run build
 npm run start
 ```
 
-同时在生产环境配置：
+如果使用 Nginx 反向代理到 `3000` 端口即可，不需要单独安装 PostgreSQL。
 
-- `DATABASE_URL`
-- `ADMIN_USERNAME`
-- `ADMIN_PASSWORD`
+## 推荐部署结构
 
-## 编辑器使用流程
+- `Nginx` 对外提供 `80 / 443`
+- `Next.js` 进程跑在 `3000`
+- `SQLite` 数据文件保存在 `prisma/dev.db`
 
-推荐使用方式：
+这更适合单机部署、演示环境和个人维护的企业官网项目。
+
+## 编辑器流程
 
 1. 打开 `/editor`
 2. 选择行业模板
 3. 勾选要生成的独立页面
-4. 进入某个页面开始拖拽编辑
-5. 在右侧修改模块设置或公共设置
-6. 完成后点击“发布整站”
+4. 进入页面拖拽编辑
+5. 在右侧修改模块设置和公共设置
+6. 点击“发布整站”
 
 ## 新闻中心
 
@@ -165,8 +139,8 @@ npm run start
 - 新闻列表分页
 - 草稿 / 发布筛选
 - 删除新闻
-- 富文本正文编辑
-- 插入图片和视频
+- 富文本编辑
+- 图片和视频插入
 - 粘贴带图片或视频的富文本内容
 
 ## 项目结构
@@ -174,18 +148,8 @@ npm run start
 ```text
 app/                     Next.js 路由
 components/              页面组件与编辑器组件
-lib/builder/             页面搭建器 schema、registry、模板库
+lib/builder/             搭建器 schema、registry、模板库
 lib/news/                新闻中心服务
-prisma/                  Prisma schema 与 seed
+prisma/                  Prisma schema、seed、SQLite 数据文件
 public/                  静态资源
 ```
-
-## 开源建议
-
-如果你准备把它作为开源项目发布，建议同时补上：
-
-- `LICENSE`
-- `CONTRIBUTING.md`
-- `CHANGELOG.md`
-- GitHub Issue / PR 模板
-

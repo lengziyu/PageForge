@@ -22,8 +22,8 @@ import { getPrismaClient } from "@/lib/prisma";
 type PageRecord = {
   slug: string;
   title: string;
-  status: "PUBLISHED" | "DRAFT";
-  content: unknown;
+  status: string;
+  content: string;
 };
 
 type PageListRecord = PageRecord & {
@@ -59,23 +59,27 @@ function sortPageList<T extends { slug: string; title: string }>(pages: T[]) {
   });
 }
 
+function normalizePageStatus(status: string): BuilderPageStatus {
+  return status === "DRAFT" ? "DRAFT" : "PUBLISHED";
+}
+
 function mapPageRecord(record: PageRecord): BuilderPageResponse {
   return {
     slug: record.slug,
     title: record.title,
-    status: record.status,
+    status: normalizePageStatus(record.status),
     source: "database",
-    document: pageDocumentSchema.parse(record.content),
+    document: pageDocumentSchema.parse(JSON.parse(record.content)),
   };
 }
 
 function mapPageListItem(record: PageListRecord): BuilderPageListItem {
-  const document = pageDocumentSchema.parse(record.content);
+  const document = pageDocumentSchema.parse(JSON.parse(record.content));
 
   return {
     slug: record.slug,
     title: record.title,
-    status: record.status,
+    status: normalizePageStatus(record.status),
     source: "database",
     updatedAt: record.updatedAt.toISOString(),
     sectionCount: document.sections.length,
@@ -263,7 +267,7 @@ export async function createPage(input: {
       slug: normalizedSlug,
       title: document.page.title,
       status: "DRAFT",
-      content: document,
+      content: JSON.stringify(document),
     },
     select: {
       slug: true,
@@ -316,7 +320,7 @@ export async function createPagesFromTemplate(
             slug: document.page.slug,
             title: document.page.title,
             status: "DRAFT",
-            content: document,
+            content: JSON.stringify(document),
           },
           select: {
             slug: true,
@@ -355,7 +359,7 @@ export async function createPagesFromTemplate(
           slug: document.page.slug,
           title: document.page.title,
           status: "DRAFT",
-          content: document,
+          content: JSON.stringify(document),
         },
         select: {
           slug: true,
@@ -418,13 +422,13 @@ export async function savePageBySlug(
     update: {
       title: parsedDocument.page.title,
       status,
-      content: parsedDocument,
+      content: JSON.stringify(parsedDocument),
     },
     create: {
       slug,
       title: parsedDocument.page.title,
       status,
-      content: parsedDocument,
+      content: JSON.stringify(parsedDocument),
     },
     select: {
       slug: true,
@@ -452,7 +456,7 @@ export async function publishSite(input?: {
     });
     const pageDocuments = pages.map((page) => ({
       slug: page.slug,
-      document: pageDocumentSchema.parse(page.content),
+      document: pageDocumentSchema.parse(JSON.parse(page.content)),
     }));
     const pageTitleMap = new Map(
       pageDocuments.map((page) => [page.slug, page.document.page.title]),
@@ -471,10 +475,10 @@ export async function publishSite(input?: {
         return getPrismaClient().sitePage.update({
           where: { slug: page.slug },
           data: {
-            content: {
+            content: JSON.stringify({
               ...page.document,
               site: currentSiteConfig,
-            },
+            }),
           },
         });
       }),

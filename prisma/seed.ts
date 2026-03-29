@@ -1,20 +1,17 @@
 import "dotenv/config";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
 import { defaultPageDocument } from "../lib/builder/default-page";
+import { resolveSqliteUrl } from "../lib/sqlite-url";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set. Check your .env file.");
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({
-  adapter,
+  adapter: new PrismaBetterSqlite3({
+    url: resolveSqliteUrl(process.env.DATABASE_URL),
+  }),
 });
 
 async function main() {
@@ -25,13 +22,13 @@ async function main() {
     update: {
       title: defaultPageDocument.page.title,
       status: "PUBLISHED",
-      content: defaultPageDocument,
+      content: JSON.stringify(defaultPageDocument),
     },
     create: {
       slug: defaultPageDocument.page.slug,
       title: defaultPageDocument.page.title,
       status: "PUBLISHED",
-      content: defaultPageDocument,
+      content: JSON.stringify(defaultPageDocument),
     },
   });
 }
@@ -39,11 +36,9 @@ async function main() {
 main()
   .then(async () => {
     await prisma.$disconnect();
-    await pool.end();
   })
   .catch(async (error) => {
     console.error(error);
     await prisma.$disconnect();
-    await pool.end();
     process.exit(1);
   });

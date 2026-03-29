@@ -9,6 +9,10 @@ import { getPrismaClient } from "@/lib/prisma";
 
 const defaultNewsCategories = ["品牌动态", "行业观点", "媒体报道"];
 
+function normalizeNewsStatus(status: string): SiteNewsStatus {
+  return status === "DRAFT" ? "DRAFT" : "PUBLISHED";
+}
+
 export class NewsServiceError extends Error {
   code:
     | "INVALID_SLUG"
@@ -40,7 +44,7 @@ function mapSummary(record: {
   category: string;
   summary: string;
   coverImage: string;
-  status: SiteNewsStatus;
+  status: string;
   publishedAt: Date | null;
   updatedAt: Date;
 }): SiteNewsSummary {
@@ -51,7 +55,7 @@ function mapSummary(record: {
     category: record.category,
     summary: record.summary,
     coverImage: record.coverImage,
-    status: record.status,
+    status: normalizeNewsStatus(record.status),
     publishedAt: record.publishedAt?.toISOString() ?? null,
     updatedAt: record.updatedAt.toISOString(),
   };
@@ -65,7 +69,7 @@ function mapArticle(record: {
   summary: string;
   coverImage: string;
   contentHtml: string;
-  status: SiteNewsStatus;
+  status: string;
   publishedAt: Date | null;
   updatedAt: Date;
 }): SiteNewsArticle {
@@ -412,7 +416,7 @@ export async function createNewsArticle(input: {
   });
 
   if (existing) {
-    throw new NewsServiceError("SLUG_EXISTS", `新闻 slug “${slug}” 已存在。`);
+    throw new NewsServiceError("SLUG_EXISTS", `新闻 slug “${slug}”已存在。`);
   }
 
   await ensureCategoryExists(input.category);
