@@ -1,0 +1,32 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#EEF4FF"/>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1276" cy="196" r="240" fill="url(#orb1)"/>
+  <circle cx="1320" cy="648" r="280" fill="url(#orb2)"/>
+  <circle cx="1098" cy="430" r="160" fill="#FFFFFF" fill-opacity="0.34"/>
+  <path d="M902 208L1108 304L1308 214" stroke="#A3B2FF" stroke-width="2"/>
+  <path d="M902 456L1112 560L1316 470" stroke="#A3B2FF" stroke-width="2"/>
+  <path d="M1110 304V560" stroke="#C7D2FE" stroke-width="2"/>
+  <path d="M904 208V456" stroke="#D6DEFF" stroke-width="2"/>
+  <path d="M1308 214V470" stroke="#D6DEFF" stroke-width="2"/>
+  <rect x="864" y="170" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="1068" y="266" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="1272" y="176" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="868" y="418" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.46"/>
+  <rect x="1072" y="522" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="1280" y="432" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.46"/>
+  <defs>
+    <linearGradient id="bg" x1="250" y1="100" x2="1370" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9FBFF"/>
+      <stop offset="1" stop-color="#E2EAFF"/>
+    </linearGradient>
+    <radialGradient id="orb1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1276 196) rotate(90) scale(240)">
+      <stop stop-color="#6072FF" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#6072FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1320 648) rotate(90) scale(280)">
+      <stop stop-color="#B3C1FF" stop-opacity="0.82"/>
+      <stop offset="1" stop-color="#B3C1FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

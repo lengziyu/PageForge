@@ -1,0 +1,190 @@
+/* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
+import type { ReactNode } from "react";
+import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
+import type { BuilderPageDocument } from "@/lib/builder/schema";
+
+type SiteShellProps = {
+  activeSlug: string;
+  document: BuilderPageDocument;
+  pages: BuilderPageListItem[];
+  children: ReactNode;
+};
+
+function buildNavigationItems(
+  document: BuilderPageDocument,
+  pages: BuilderPageListItem[],
+) {
+  const publishedSlugs = new Set(pages.map((page) => page.slug));
+  const configuredLinks = document.site.navigationLinks.filter((link) =>
+    publishedSlugs.has(link.slug),
+  );
+
+  if (configuredLinks.length > 0) {
+    return configuredLinks;
+  }
+
+  return pages.map((page) => ({
+    label: page.title,
+    href: `/sites/${page.slug}`,
+    slug: page.slug,
+  }));
+}
+
+function FooterClassic({ document }: { document: BuilderPageDocument }) {
+  const footer = document.site.footer;
+
+  return (
+    <footer className="border-t border-slate-200 bg-white">
+      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[1.2fr_1fr]">
+        <div>
+          <p className="text-lg font-semibold text-slate-950">{document.site.name}</p>
+          <p className="mt-3 max-w-lg text-sm leading-7 text-slate-600">
+            {document.site.tagline || "以模块化方式搭建更清晰、更可信的企业官网。"}
+          </p>
+        </div>
+        <div className="grid gap-3 text-sm text-slate-600">
+          <p>公司地址：{footer.companyAddress}</p>
+          <p>联系电话：{footer.phone}</p>
+          <p>联系邮箱：{footer.email}</p>
+          <p>备案号：{footer.registrationNumber}</p>
+          <p className="text-slate-500">{footer.copyrightText}</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function FooterStacked({ document }: { document: BuilderPageDocument }) {
+  const footer = document.site.footer;
+
+  return (
+    <footer className="border-t border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)]">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-lg font-semibold text-slate-950">{document.site.name}</p>
+            <p className="mt-2 text-sm text-slate-600">
+              {document.site.tagline || "为企业提供清晰的官网表达与长期内容沉淀。"}
+            </p>
+          </div>
+          <p className="text-sm text-slate-500">{footer.copyrightText}</p>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {[
+            { title: "公司地址", value: footer.companyAddress },
+            { title: "联系电话", value: footer.phone },
+            { title: "备案号", value: footer.registrationNumber },
+          ].map((item) => (
+            <div
+              className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm"
+              key={item.title}
+            >
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+                {item.title}
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-700">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function FooterMinimal({ document }: { document: BuilderPageDocument }) {
+  const footer = document.site.footer;
+
+  return (
+    <footer className="border-t border-slate-200 bg-slate-950 text-white">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="font-semibold">{document.site.name}</p>
+          <p className="mt-1 text-sm text-slate-400">{footer.companyAddress}</p>
+        </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-300">
+          <span>{footer.phone}</span>
+          <span>{footer.email}</span>
+          <span>{footer.registrationNumber}</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function SiteFooter({ document }: { document: BuilderPageDocument }) {
+  switch (document.site.footer.template) {
+    case "stacked":
+      return <FooterStacked document={document} />;
+    case "minimal":
+      return <FooterMinimal document={document} />;
+    case "classic":
+    default:
+      return <FooterClassic document={document} />;
+  }
+}
+
+export function SiteShell({
+  activeSlug,
+  document,
+  pages,
+  children,
+}: SiteShellProps) {
+  const navigationItems = buildNavigationItems(document, pages);
+
+  return (
+    <div className="min-h-screen bg-white">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            {document.site.logoSrc ? (
+              <img
+                alt={document.site.name}
+                className="h-11 w-11 rounded-lg object-cover"
+                src={document.site.logoSrc}
+              />
+            ) : null}
+            <div>
+              <Link
+                className="text-lg font-semibold text-slate-950"
+                href="/sites/homepage"
+                style={{ color: "#020617" }}
+              >
+                {document.site.name}
+              </Link>
+              <p className="mt-1 text-sm text-slate-500">{document.site.tagline}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <nav className="flex flex-wrap gap-2">
+              {navigationItems.map((item) => {
+                const isActive = item.slug === activeSlug;
+
+                return (
+                  <Link
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                      isActive
+                        ? "bg-slate-950 text-white"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                    href={item.href}
+                    key={item.slug}
+                    style={{ color: isActive ? "#ffffff" : "#334155" }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <main>{children}</main>
+
+      <SiteFooter document={document} />
+    </div>
+  );
+}
