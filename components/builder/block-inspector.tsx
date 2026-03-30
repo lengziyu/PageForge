@@ -1192,7 +1192,7 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                   ...props,
                   items: [
                     ...props.items,
-                    { name: "客户姓名", title: "职位", company: "公司名称", content: "这是一段真实的客户评价内容。", rating: 5 },
+                    { name: "客户姓名", title: "职位", company: "公司名称", content: "这是一段真实的客户评价内容。", avatar: "" },
                   ],
                 }),
               )
