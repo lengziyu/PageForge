@@ -1348,7 +1348,7 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                 section.id,
                 replaceSectionProps(section, {
                   ...props,
-                  items: [...props.items, { name: "新合作伙伴" }],
+                  items: [...props.items, { name: "新合作伙伴", logoText: "新合作伙伴" }],
                 }),
               )
             }
@@ -1415,11 +1415,11 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                     section.id,
                     replaceSectionProps(section, {
                       ...props,
-                      items: updateArrayItem(props.items, index, { ...item, role: value }),
+                      items: updateArrayItem(props.items, index, { ...item, title: value }),
                     }),
                   )
                 }
-                value={item.role}
+                value={item.title}
               />
               <Field
                 label="简介"
@@ -1446,7 +1446,7 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                   ...props,
                   items: [
                     ...props.items,
-                    { name: "新成员", role: "职位", bio: "成员简介。", avatar: "" },
+                    { name: "新成员", title: "职位", bio: "成员简介。", avatar: "" },
                   ],
                 }),
               )
