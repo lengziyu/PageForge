@@ -2,12 +2,16 @@ import { z } from "zod";
 import { ctaSectionSchema } from "@/lib/builder/blocks/cta";
 import { companyIntroSectionSchema } from "@/lib/builder/blocks/company-intro";
 import { contactMethodsSectionSchema } from "@/lib/builder/blocks/contact-methods";
+import { faqSectionSchema } from "@/lib/builder/blocks/faq";
 import { featureListSectionSchema } from "@/lib/builder/blocks/feature-list";
 import { heroSectionSchema } from "@/lib/builder/blocks/hero";
 import { newsListSectionSchema } from "@/lib/builder/blocks/news-list";
+import { partnersSectionSchema } from "@/lib/builder/blocks/partners";
 import { serviceGridSectionSchema } from "@/lib/builder/blocks/service-grid";
 import { statsStripSectionSchema } from "@/lib/builder/blocks/stats-strip";
+import { teamMembersSectionSchema } from "@/lib/builder/blocks/team-members";
 import { techHighlightsSectionSchema } from "@/lib/builder/blocks/tech-highlights";
+import { testimonialsSectionSchema } from "@/lib/builder/blocks/testimonials";
 import { createSiteConfig, footerTemplateCatalog } from "@/lib/builder/site-config";
 
 export const siteNavigationLinkSchema = z.object({
@@ -40,6 +44,10 @@ export const pageSectionSchema = z.discriminatedUnion("type", [
   companyIntroSectionSchema,
   contactMethodsSectionSchema,
   ctaSectionSchema,
+  testimonialsSectionSchema,
+  faqSectionSchema,
+  partnersSectionSchema,
+  teamMembersSectionSchema,
 ]);
 
 export const pageDocumentSchema = z.object({

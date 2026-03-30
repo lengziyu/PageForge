@@ -8,6 +8,10 @@ import {
   type ContactMethodsProps,
 } from "@/lib/builder/blocks/contact-methods";
 import {
+  faqBlockDefinition,
+  type FaqProps,
+} from "@/lib/builder/blocks/faq";
+import {
   featureListBlockDefinition,
   type FeatureListBlockProps,
 } from "@/lib/builder/blocks/feature-list";
@@ -20,6 +24,10 @@ import {
   type NewsListProps,
 } from "@/lib/builder/blocks/news-list";
 import {
+  partnersBlockDefinition,
+  type PartnersProps,
+} from "@/lib/builder/blocks/partners";
+import {
   serviceGridBlockDefinition,
   type ServiceGridProps,
 } from "@/lib/builder/blocks/service-grid";
@@ -28,9 +36,17 @@ import {
   type StatsStripProps,
 } from "@/lib/builder/blocks/stats-strip";
 import {
+  teamMembersBlockDefinition,
+  type TeamMembersProps,
+} from "@/lib/builder/blocks/team-members";
+import {
   techHighlightsBlockDefinition,
   type TechHighlightsProps,
 } from "@/lib/builder/blocks/tech-highlights";
+import {
+  testimonialsBlockDefinition,
+  type TestimonialsProps,
+} from "@/lib/builder/blocks/testimonials";
 
 export const blockDefinitions = [
   heroBlockDefinition,
@@ -42,6 +58,10 @@ export const blockDefinitions = [
   companyIntroBlockDefinition,
   contactMethodsBlockDefinition,
   ctaBlockDefinition,
+  testimonialsBlockDefinition,
+  faqBlockDefinition,
+  partnersBlockDefinition,
+  teamMembersBlockDefinition,
 ] as const;
 
 export type BuilderBlockType = (typeof blockDefinitions)[number]["type"];
@@ -58,10 +78,14 @@ export type {
   CompanyIntroProps,
   ContactMethodsProps,
   CtaBlockProps,
+  FaqProps,
   FeatureListBlockProps,
   HeroBlockProps,
   NewsListProps,
+  PartnersProps,
   ServiceGridProps,
   StatsStripProps,
+  TeamMembersProps,
   TechHighlightsProps,
+  TestimonialsProps,
 };
