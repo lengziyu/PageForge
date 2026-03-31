@@ -118,7 +118,10 @@ export async function listNewsCategories(): Promise<SiteNewsCategory[]> {
   try {
     await ensureDefaultNewsCategories();
 
-    const [records, counts] = await Promise.all([
+    const [records, counts]: [
+      Array<{ id: string; name: string; createdAt: Date; updatedAt: Date }>,
+      Array<{ category: string; _count: { _all: number } }>,
+    ] = await Promise.all([
       getPrismaClient().siteNewsCategory.findMany({
         orderBy: [{ name: "asc" }],
         select: {
@@ -137,7 +140,10 @@ export async function listNewsCategories(): Promise<SiteNewsCategory[]> {
     ]);
 
     const countMap = new Map(
-      counts.map((item) => [item.category, item._count._all]),
+      counts.map((item) => [
+        item.category,
+        item._count._all,
+      ]),
     );
 
     return records.map((record) => mapCategory(record, countMap.get(record.name) ?? 0));
@@ -217,31 +223,35 @@ export async function updateNewsCategoryById(
     },
   });
 
-  const record = await getPrismaClient().$transaction(async (tx) => {
-    if (existing.name !== normalizedName) {
-      await tx.siteNewsArticle.updateMany({
-        where: {
-          category: existing.name,
-        },
-        data: {
-          category: normalizedName,
-        },
-      });
-    }
-
-    return tx.siteNewsCategory.update({
-      where: { id },
-      data: {
-        name: normalizedName,
-      },
-      select: {
-        id: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  const updateCategoryOperation = getPrismaClient().siteNewsCategory.update({
+    where: { id },
+    data: {
+      name: normalizedName,
+    },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
+
+  const record =
+    existing.name !== normalizedName
+      ? (
+          await getPrismaClient().$transaction([
+            getPrismaClient().siteNewsArticle.updateMany({
+              where: {
+                category: existing.name,
+              },
+              data: {
+                category: normalizedName,
+              },
+            }),
+            updateCategoryOperation,
+          ])
+        )[1]
+      : await updateCategoryOperation;
 
   return mapCategory(record, articleCount);
 }

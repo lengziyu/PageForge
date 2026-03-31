@@ -30,6 +30,18 @@ type PageListRecord = PageRecord & {
   updatedAt: Date;
 };
 
+const pageRecordSelect = {
+  slug: true,
+  title: true,
+  status: true,
+  content: true,
+} as const;
+
+const pageListSelect = {
+  ...pageRecordSelect,
+  updatedAt: true,
+} as const;
+
 export class PageServiceError extends Error {
   code: "INVALID_SLUG" | "SLUG_EXISTS" | "DELETE_FORBIDDEN" | "PAGE_NOT_FOUND";
 
@@ -47,7 +59,7 @@ function getPageOrderIndex(slug: string) {
   return standardIndex >= 0 ? standardIndex : enterprisePageCatalog.length + 10;
 }
 
-function sortPageList<T extends { slug: string; title: string }>(pages: T[]) {
+function sortPageList<T extends { slug: string; title: string }>(pages: readonly T[]): T[] {
   return [...pages].sort((left, right) => {
     const indexDiff = getPageOrderIndex(left.slug) - getPageOrderIndex(right.slug);
 
@@ -63,18 +75,22 @@ function normalizePageStatus(status: string): BuilderPageStatus {
   return status === "DRAFT" ? "DRAFT" : "PUBLISHED";
 }
 
+function parsePageDocument(content: string): BuilderPageDocument {
+  return pageDocumentSchema.parse(JSON.parse(content));
+}
+
 function mapPageRecord(record: PageRecord): BuilderPageResponse {
   return {
     slug: record.slug,
     title: record.title,
     status: normalizePageStatus(record.status),
     source: "database",
-    document: pageDocumentSchema.parse(JSON.parse(record.content)),
+    document: parsePageDocument(record.content),
   };
 }
 
 function mapPageListItem(record: PageListRecord): BuilderPageListItem {
-  const document = pageDocumentSchema.parse(JSON.parse(record.content));
+  const document = parsePageDocument(record.content);
 
   return {
     slug: record.slug,
@@ -84,6 +100,17 @@ function mapPageListItem(record: PageListRecord): BuilderPageListItem {
     updatedAt: record.updatedAt.toISOString(),
     sectionCount: document.sections.length,
   };
+}
+
+function mapValidPageListItems(records: PageListRecord[]): BuilderPageListItem[] {
+  return records.flatMap((record) => {
+    try {
+      return [mapPageListItem(record)];
+    } catch (error) {
+      console.error(`Skipping invalid page record in list: ${record.slug}`, error);
+      return [];
+    }
+  });
 }
 
 function createFallbackPage(slug: string): BuilderPageResponse {
@@ -126,23 +153,18 @@ export async function listPages(): Promise<BuilderPageListItem[]> {
   try {
     const pages = await getPrismaClient().sitePage.findMany({
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      select: {
-        slug: true,
-        title: true,
-        status: true,
-        updatedAt: true,
-        content: true,
-      },
+      select: pageListSelect,
     });
 
-    const items = sortPageList(pages.map(mapPageListItem));
+    const items: BuilderPageListItem[] = sortPageList(mapValidPageListItems(pages));
 
     if (!items.some((page) => page.slug === defaultPageDocument.page.slug)) {
       return [createFallbackHomepageListItem(), ...items];
     }
 
     return items;
-  } catch {
+  } catch (error) {
+    console.error("Failed to list pages:", error);
     return [createFallbackHomepageListItem()];
   }
 }
@@ -154,16 +176,10 @@ export async function listPublishedPages(): Promise<BuilderPageListItem[]> {
         status: "PUBLISHED",
       },
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      select: {
-        slug: true,
-        title: true,
-        status: true,
-        updatedAt: true,
-        content: true,
-      },
+      select: pageListSelect,
     });
 
-    const items = sortPageList(pages.map(mapPageListItem));
+    const items: BuilderPageListItem[] = sortPageList(mapValidPageListItems(pages));
 
     if (items.length === 0) {
       return [createFallbackHomepageListItem()];
@@ -174,7 +190,8 @@ export async function listPublishedPages(): Promise<BuilderPageListItem[]> {
     }
 
     return items;
-  } catch {
+  } catch (error) {
+    console.error("Failed to list published pages:", error);
     return [createFallbackHomepageListItem()];
   }
 }
@@ -185,12 +202,7 @@ export async function getEditablePageBySlug(
   try {
     const page = await getPrismaClient().sitePage.findUnique({
       where: { slug },
-      select: {
-        slug: true,
-        title: true,
-        status: true,
-        content: true,
-      },
+      select: pageRecordSelect,
     });
 
     if (!page) {
@@ -198,7 +210,8 @@ export async function getEditablePageBySlug(
     }
 
     return mapPageRecord(page);
-  } catch {
+  } catch (error) {
+    console.error(`Failed to load editable page: ${slug}`, error);
     return createFallbackPage(slug);
   }
 }
@@ -212,12 +225,7 @@ export async function getPublishedPageBySlug(
         slug,
         status: "PUBLISHED",
       },
-      select: {
-        slug: true,
-        title: true,
-        status: true,
-        content: true,
-      },
+      select: pageRecordSelect,
     });
 
     if (page) {
@@ -229,7 +237,8 @@ export async function getPublishedPageBySlug(
     }
 
     return null;
-  } catch {
+  } catch (error) {
+    console.error(`Failed to load published page: ${slug}`, error);
     if (slug === defaultPageDocument.page.slug) {
       return createFallbackPage(slug);
     }
@@ -296,25 +305,19 @@ export async function createPagesFromTemplate(
   const slugs = documents.map((document) => document.page.slug);
   const replaceExisting = options?.replaceExisting ?? false;
 
-  const existingPages = await getPrismaClient().sitePage.findMany({
+  const existingPages: PageRecord[] = await getPrismaClient().sitePage.findMany({
     where: {
       slug: {
         in: slugs,
       },
     },
-    select: {
-      slug: true,
-      title: true,
-      status: true,
-      content: true,
-    },
+    select: pageRecordSelect,
   });
 
   if (replaceExisting) {
-    await getPrismaClient().sitePage.deleteMany({});
-
-    const recreatedPages = await getPrismaClient().$transaction(
-      documents.map((document) =>
+    const transactionResults = await getPrismaClient().$transaction([
+      getPrismaClient().sitePage.deleteMany({}),
+      ...documents.map((document) =>
         getPrismaClient().sitePage.create({
           data: {
             slug: document.page.slug,
@@ -322,17 +325,13 @@ export async function createPagesFromTemplate(
             status: "DRAFT",
             content: JSON.stringify(document),
           },
-          select: {
-            slug: true,
-            title: true,
-            status: true,
-            content: true,
-          },
+          select: pageRecordSelect,
         }),
       ),
-    );
+    ]);
+    const recreatedPages = transactionResults.slice(1) as PageRecord[];
 
-    const pages = sortPageList(recreatedPages).map(mapPageRecord);
+    const pages: BuilderPageResponse[] = sortPageList(recreatedPages).map(mapPageRecord);
     await seedDemoNewsSafely({
       siteName: pages[0]?.document.site.name ?? "企业站点",
       keyword: templateId,
@@ -352,7 +351,7 @@ export async function createPagesFromTemplate(
     );
   }
 
-  const createdPages = await getPrismaClient().$transaction(
+  const createdPages: PageRecord[] = await getPrismaClient().$transaction(
     documents.map((document) =>
       getPrismaClient().sitePage.create({
         data: {
@@ -361,17 +360,12 @@ export async function createPagesFromTemplate(
           status: "DRAFT",
           content: JSON.stringify(document),
         },
-        select: {
-          slug: true,
-          title: true,
-          status: true,
-          content: true,
-        },
+        select: pageRecordSelect,
       }),
     ),
   );
 
-  const pages = sortPageList(createdPages).map(mapPageRecord);
+  const pages: BuilderPageResponse[] = sortPageList(createdPages).map(mapPageRecord);
   await seedDemoNewsSafely({
     siteName: pages[0]?.document.site.name ?? "企业站点",
     keyword: templateId,
@@ -448,7 +442,8 @@ export async function publishSite(input?: {
   if (input?.currentPageSlug && input.currentDocument) {
     await savePageBySlug(input.currentPageSlug, input.currentDocument, "PUBLISHED");
 
-    const pages = await getPrismaClient().sitePage.findMany({
+    const pages: Array<Pick<PageRecord, "slug" | "content">> =
+      await getPrismaClient().sitePage.findMany({
       select: {
         slug: true,
         content: true,
@@ -456,7 +451,7 @@ export async function publishSite(input?: {
     });
     const pageDocuments = pages.map((page) => ({
       slug: page.slug,
-      document: pageDocumentSchema.parse(JSON.parse(page.content)),
+      document: parsePageDocument(page.content),
     }));
     const pageTitleMap = new Map(
       pageDocuments.map((page) => [page.slug, page.document.page.title]),
