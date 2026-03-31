@@ -1,70 +1,32 @@
 <svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="900" fill="url(#bgGrad)"/>
-  <circle cx="1350" cy="170" r="300" fill="url(#orb1)"/>
-  <circle cx="1460" cy="740" r="260" fill="url(#orb2)"/>
-  <!-- Hexagon network nodes -->
-  <circle cx="1104" cy="440" r="18" fill="url(#centerNode)" stroke="white" stroke-width="2"/>
-  <circle cx="920" cy="280" r="13" fill="white" fill-opacity="0.9" stroke="#C7D2FE" stroke-width="1.5"/>
-  <circle cx="1290" cy="268" r="13" fill="white" fill-opacity="0.9" stroke="#C7D2FE" stroke-width="1.5"/>
-  <circle cx="912" cy="596" r="13" fill="white" fill-opacity="0.9" stroke="#C7D2FE" stroke-width="1.5"/>
-  <circle cx="1298" cy="608" r="13" fill="white" fill-opacity="0.9" stroke="#C7D2FE" stroke-width="1.5"/>
-  <circle cx="870" cy="440" r="10" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5"/>
-  <circle cx="1342" cy="440" r="10" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5"/>
-  <!-- Connecting lines -->
-  <path d="M1104 440 L920 280" stroke="url(#lineGrad)" stroke-width="1.8" stroke-opacity="0.5"/>
-  <path d="M1104 440 L1290 268" stroke="url(#lineGrad)" stroke-width="1.8" stroke-opacity="0.5"/>
-  <path d="M1104 440 L912 596" stroke="url(#lineGrad)" stroke-width="1.8" stroke-opacity="0.5"/>
-  <path d="M1104 440 L1298 608" stroke="url(#lineGrad)" stroke-width="1.8" stroke-opacity="0.5"/>
-  <path d="M1104 440 L870 440" stroke="url(#lineGrad)" stroke-width="1.8" stroke-opacity="0.4"/>
-  <path d="M1104 440 L1342 440" stroke="url(#lineGrad)" stroke-width="1.8" stroke-opacity="0.4"/>
-  <!-- Orbit ring -->
-  <circle cx="1104" cy="440" r="160" stroke="#C7D2FE" stroke-width="1.2" stroke-opacity="0.35" fill="none" stroke-dasharray="6 5"/>
-  <circle cx="1104" cy="440" r="240" stroke="#DDE6FF" stroke-width="1" stroke-opacity="0.25" fill="none" stroke-dasharray="4 6"/>
-  <!-- Feature cards at nodes -->
-  <rect x="834" y="224" width="172" height="112" rx="14" fill="white" fill-opacity="0.82" stroke="#E0E8FF" stroke-width="1.5"/>
-  <rect x="852" y="244" width="32" height="32" rx="9" fill="url(#nodeIc1)"/>
-  <rect x="852" y="286" width="80" height="7" rx="3" fill="#334155"/>
-  <rect x="852" y="300" width="136" height="6" rx="3" fill="#CBD5E1"/>
-  <rect x="852" y="313" width="100" height="6" rx="3" fill="#E2E8F0"/>
-  <rect x="1200" y="212" width="172" height="112" rx="14" fill="white" fill-opacity="0.78" stroke="#E0E8FF" stroke-width="1.5"/>
-  <rect x="1218" y="232" width="32" height="32" rx="9" fill="url(#nodeIc2)"/>
-  <rect x="1218" y="274" width="80" height="7" rx="3" fill="#334155"/>
-  <rect x="1218" y="288" width="136" height="6" rx="3" fill="#CBD5E1"/>
-  <rect x="1218" y="301" width="100" height="6" rx="3" fill="#E2E8F0"/>
-  <rect x="822" y="540" width="172" height="112" rx="14" fill="white" fill-opacity="0.78" stroke="#E0E8FF" stroke-width="1.5"/>
-  <rect x="840" y="560" width="32" height="32" rx="9" fill="url(#nodeIc3)"/>
-  <rect x="840" y="602" width="80" height="7" rx="3" fill="#334155"/>
-  <rect x="840" y="616" width="136" height="6" rx="3" fill="#CBD5E1"/>
-  <rect x="840" y="629" width="100" height="6" rx="3" fill="#E2E8F0"/>
-  <rect x="1208" y="552" width="172" height="112" rx="14" fill="white" fill-opacity="0.78" stroke="#E0E8FF" stroke-width="1.5"/>
-  <rect x="1226" y="572" width="32" height="32" rx="9" fill="url(#nodeIc4)"/>
-  <rect x="1226" y="614" width="80" height="7" rx="3" fill="#334155"/>
-  <rect x="1226" y="628" width="136" height="6" rx="3" fill="#CBD5E1"/>
-  <rect x="1226" y="641" width="100" height="6" rx="3" fill="#E2E8F0"/>
+  <rect width="1600" height="900" fill="#EEF4FF"/>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1276" cy="196" r="240" fill="url(#orb1)"/>
+  <circle cx="1320" cy="648" r="280" fill="url(#orb2)"/>
+  <circle cx="1098" cy="430" r="160" fill="#FFFFFF" fill-opacity="0.34"/>
+  <path d="M902 208L1108 304L1308 214" stroke="#A3B2FF" stroke-width="2"/>
+  <path d="M902 456L1112 560L1316 470" stroke="#A3B2FF" stroke-width="2"/>
+  <path d="M1110 304V560" stroke="#C7D2FE" stroke-width="2"/>
+  <path d="M904 208V456" stroke="#D6DEFF" stroke-width="2"/>
+  <path d="M1308 214V470" stroke="#D6DEFF" stroke-width="2"/>
+  <rect x="864" y="170" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="1068" y="266" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="1272" y="176" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="868" y="418" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.46"/>
+  <rect x="1072" y="522" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.56"/>
+  <rect x="1280" y="432" width="84" height="84" rx="20" fill="#FFFFFF" fill-opacity="0.46"/>
   <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F2F6FF"/>
-      <stop offset="1" stop-color="#E4EDFF"/>
+    <linearGradient id="bg" x1="250" y1="100" x2="1370" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9FBFF"/>
+      <stop offset="1" stop-color="#E2EAFF"/>
     </linearGradient>
-    <radialGradient id="orb1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1350 170) rotate(90) scale(300)">
-      <stop stop-color="#6366F1" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    <radialGradient id="orb1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1276 196) rotate(90) scale(240)">
+      <stop stop-color="#6072FF" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#6072FF" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="orb2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1460 740) rotate(90) scale(260)">
-      <stop stop-color="#A5B4FC" stop-opacity="0.32"/>
-      <stop offset="1" stop-color="#A5B4FC" stop-opacity="0"/>
+    <radialGradient id="orb2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1320 648) rotate(90) scale(280)">
+      <stop stop-color="#B3C1FF" stop-opacity="0.82"/>
+      <stop offset="1" stop-color="#B3C1FF" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="centerNode" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1104 440) rotate(45) scale(22)">
-      <stop stop-color="#4F46E5"/>
-      <stop offset="1" stop-color="#6366F1"/>
-    </radialGradient>
-    <linearGradient id="lineGrad" x1="870" y1="280" x2="1342" y2="608" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6366F1"/>
-      <stop offset="1" stop-color="#C7D2FE"/>
-    </linearGradient>
-    <linearGradient id="nodeIc1" x1="852" y1="244" x2="884" y2="276" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#818CF8"/></linearGradient>
-    <linearGradient id="nodeIc2" x1="1218" y1="232" x2="1250" y2="264" gradientUnits="userSpaceOnUse"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient>
-    <linearGradient id="nodeIc3" x1="840" y1="560" x2="872" y2="592" gradientUnits="userSpaceOnUse"><stop stop-color="#0891B2"/><stop offset="1" stop-color="#22D3EE"/></linearGradient>
-    <linearGradient id="nodeIc4" x1="1226" y1="572" x2="1258" y2="604" gradientUnits="userSpaceOnUse"><stop stop-color="#059669"/><stop offset="1" stop-color="#34D399"/></linearGradient>
   </defs>
 </svg>

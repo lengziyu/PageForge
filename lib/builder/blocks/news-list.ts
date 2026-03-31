@@ -40,7 +40,7 @@ export const newsListDefaultProps: NewsListProps = {
       title: "发布年度产品路线图与平台升级计划",
       date: "2026-03-29",
       summary: "从战略方向到交付节奏，系统说明未来一年的重点推进事项。",
-      slug: "annual-roadmap-update",
+      slug: "product-roadmap-2026",
       coverImage: "/hero/news-media-wall.svg",
     },
     {
@@ -48,7 +48,7 @@ export const newsListDefaultProps: NewsListProps = {
       title: "企业官网如何兼顾品牌表达与业务转化",
       date: "2026-03-20",
       summary: "从信息结构、内容表达与线索入口三个维度讨论企业官网建设的重点。",
-      slug: "brand-site-observation",
+      slug: "brand-and-conversion",
       coverImage: "/hero/about-studio.svg",
     },
     {
@@ -56,7 +56,7 @@ export const newsListDefaultProps: NewsListProps = {
       title: "技术可信度正在成为客户评估合作的重要标准",
       date: "2026-03-11",
       summary: "聚焦技术表达如何影响企业品牌感知与商业决策。",
-      slug: "technology-trust-upgrade",
+      slug: "technology-trust",
       coverImage: "/hero/technology-platform.svg",
     },
   ],
