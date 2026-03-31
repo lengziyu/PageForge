@@ -56,13 +56,6 @@ const audiences = [
   "希望把官网维护权交回内容团队，而不是每次都找开发改页面",
 ] as const;
 
-const quickLinks = [
-  { label: "介绍页", href: "/about" },
-  { label: "管理员登录", href: "/admin/login" },
-  { label: "编辑后台", href: "/editor" },
-  { label: "站点首页", href: "/sites/homepage" },
-] as const;
-
 export const metadata: Metadata = {
   title: "关于 PageForge",
   description: "PageForge 是一个用于搭建企业官网的模板化、模块化可视化编辑系统。",
@@ -71,32 +64,6 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#d7efe8_0%,transparent_28%),linear-gradient(180deg,#f7fbfa_0%,#eef2f7_48%,#f8fafc_100%)] text-slate-900">
-      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white">
-              PF
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-teal-700">PageForge</p>
-              <p className="mt-1 text-sm text-slate-500">企业官网模板化建站与编辑系统</p>
-            </div>
-          </div>
-
-          <nav className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-            {quickLinks.map((item) => (
-              <Link
-                className="rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-                href={item.href}
-                key={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
-
       <section className="border-b border-slate-200/70">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
@@ -134,35 +101,15 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">快速开始</p>
-              <h2 className="mt-4 text-2xl font-semibold text-slate-950">
-                先登录后台，再初始化模板并进入页面编辑
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                PageForge 适合先生成完整站点骨架，再逐页替换文案、图像、导航与新闻内容。
-                如果你是第一次部署，直接访问管理员登录页就能进入后台开始使用。
-              </p>
-            </div>
-
-            <div className="rounded-[2rem] border border-emerald-200 bg-[linear-gradient(145deg,#ecfdf5_0%,#ffffff_100%)] p-6 shadow-[0_18px_40px_rgba(16,185,129,0.08)]">
-              <p className="text-xs uppercase tracking-[0.28em] text-emerald-700">默认管理员账号</p>
-              <div className="mt-4 space-y-3 rounded-2xl border border-emerald-200 bg-white/90 p-5 text-sm text-slate-700">
-                <p>
-                  <span className="font-medium text-slate-950">登录地址：</span>
-                  /admin/login
-                </p>
-                <p>
-                  <span className="font-medium text-slate-950">账号：</span>
-                  admin
-                </p>
-                <p>
-                  <span className="font-medium text-slate-950">密码：</span>
-                  admin123
-                </p>
-              </div>
-            </div>
+          <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.28em] text-slate-400">快速开始</p>
+            <h2 className="mt-4 text-2xl font-semibold text-slate-950">
+              先登录后台，再初始化模板并进入页面编辑
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+              PageForge 适合先生成完整站点骨架，再逐页替换文案、图像、导航与新闻内容。
+              如果你是第一次部署，建议先进入登录页，再从后台开始初始化整站。
+            </p>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -272,19 +219,19 @@ export default function AboutPage() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <Link
-                className="rounded-3xl border border-slate-200 bg-white px-6 py-6 transition hover:border-slate-300 hover:bg-slate-50"
-                href="/admin/login"
-              >
-                <p className="text-sm font-semibold text-slate-950">/admin/login</p>
-                <p className="mt-2 text-sm text-slate-600">使用默认管理员账号进入后台。</p>
-              </Link>
-              <Link
                 className="rounded-3xl bg-slate-950 px-6 py-6 text-white shadow-[0_18px_36px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
                 href="/editor"
                 style={{ color: "#ffffff" }}
               >
                 <p className="text-sm font-semibold">/editor</p>
                 <p className="mt-2 text-sm text-slate-300">进入后台，初始化模板并开始编辑页面。</p>
+              </Link>
+              <Link
+                className="rounded-3xl border border-slate-200 bg-white px-6 py-6 transition hover:border-slate-300 hover:bg-slate-50"
+                href="/admin/login"
+              >
+                <p className="text-sm font-semibold text-slate-950">/admin/login</p>
+                <p className="mt-2 text-sm text-slate-600">从登录页进入后台管理系统。</p>
               </Link>
               <Link
                 className="rounded-3xl border border-slate-200 bg-white px-6 py-6 transition hover:border-slate-300 hover:bg-slate-50"
@@ -318,10 +265,32 @@ export default function AboutPage() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-white">管理员凭据</p>
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-              <p>账号：admin</p>
-              <p className="mt-2">密码：admin123</p>
+            <p className="text-sm font-semibold text-white">外部链接</p>
+            <div className="mt-4 space-y-3 text-sm text-slate-300">
+              <a
+                className="block transition hover:text-white"
+                href="https://envra.lengziyu.cn"
+                rel="noreferrer"
+                target="_blank"
+              >
+                Envra
+              </a>
+              <a
+                className="block transition hover:text-white"
+                href="https://lengziyu.cn"
+                rel="noreferrer"
+                target="_blank"
+              >
+                lengziyu.cn
+              </a>
+              <a
+                className="block transition hover:text-white"
+                href="https://nav.lengziyu.cn"
+                rel="noreferrer"
+                target="_blank"
+              >
+                AI 前沿导航
+              </a>
             </div>
           </div>
         </div>
