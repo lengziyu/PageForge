@@ -18,6 +18,7 @@ function createPrismaClient(): PrismaClient | null {
     globalForPrisma.sqliteAdapter ??
     new PrismaBetterSqlite3({
       url: resolveSqliteUrl(connectionString),
+      timeout: 15000,
     });
 
   const prisma =

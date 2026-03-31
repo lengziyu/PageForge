@@ -56,7 +56,7 @@ copy .env.example .env
 Example:
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="file:./prisma/dev.db"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="change-this-password"
 ```
@@ -66,6 +66,7 @@ Notes:
 - `DATABASE_URL` points to `prisma/dev.db`
 - `ADMIN_USERNAME` and `ADMIN_PASSWORD` power the admin login page
 - If admin credentials are not set, login protection is disabled
+- Stop any running dev server before `prisma db push` or `npm run db:seed` so SQLite is not held open by another process
 
 ## Run Locally
 

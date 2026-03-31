@@ -10,6 +10,7 @@ if (!process.env.DATABASE_URL) {
 const prisma = new PrismaClient({
   adapter: new PrismaBetterSqlite3({
     url: resolveSqliteUrl(process.env.DATABASE_URL),
+    timeout: 15000,
   }),
 });
 

@@ -58,7 +58,7 @@ copy .env.example .env
 默认示例：
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="file:./prisma/dev.db"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="change-this-password"
 ```
@@ -68,6 +68,7 @@ ADMIN_PASSWORD="change-this-password"
 - `DATABASE_URL` 默认指向 `prisma/dev.db`
 - `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 用于后台登录页
 - 如果不设置管理员账号密码，后台登录保护不会启用
+- 执行 `prisma db push` 或 `npm run db:seed` 前，先停止正在运行的开发服务器，避免 SQLite 文件被占用
 
 ## 本地启动
 
