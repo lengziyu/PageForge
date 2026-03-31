@@ -1091,5 +1091,371 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
     );
   }
 
+  if (section.type === "testimonials") {
+    const props = section.props;
+
+    return (
+      <SectionShell caption="模块属性" title="客户评价">
+        <Field
+          label="标题"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, title: value }))
+          }
+          value={props.title}
+        />
+        <Field
+          label="描述"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, description: value }))
+          }
+          value={props.description}
+        />
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-slate-700">评价列表</p>
+          {props.items.map((item, index) => (
+            <ItemCard
+              canRemove={props.items.length > 1}
+              key={index}
+              onRemove={() =>
+                onChange(
+                  section.id,
+                  replaceSectionProps(section, {
+                    ...props,
+                    items: removeArrayItem(props.items, index),
+                  }),
+                )
+              }
+              title={`评价 ${index + 1}`}
+            >
+              <Field
+                label="客户姓名"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, name: value }),
+                    }),
+                  )
+                }
+                value={item.name}
+              />
+              <Field
+                label="职位"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, title: value }),
+                    }),
+                  )
+                }
+                value={item.title}
+              />
+              <Field
+                label="公司"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, company: value }),
+                    }),
+                  )
+                }
+                value={item.company}
+              />
+              <Field
+                label="评价内容"
+                multiline
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, content: value }),
+                    }),
+                  )
+                }
+                value={item.content}
+              />
+            </ItemCard>
+          ))}
+          <AddButton
+            label="添加评价"
+            onClick={() =>
+              onChange(
+                section.id,
+                replaceSectionProps(section, {
+                  ...props,
+                  items: [
+                    ...props.items,
+                    { name: "客户姓名", title: "职位", company: "公司名称", content: "这是一段真实的客户评价内容。", avatar: "" },
+                  ],
+                }),
+              )
+            }
+          />
+        </div>
+      </SectionShell>
+    );
+  }
+
+  if (section.type === "faq") {
+    const props = section.props;
+
+    return (
+      <SectionShell caption="模块属性" title="常见问题">
+        <Field
+          label="标题"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, title: value }))
+          }
+          value={props.title}
+        />
+        <Field
+          label="描述"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, description: value }))
+          }
+          value={props.description}
+        />
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-slate-700">问题列表</p>
+          {props.items.map((item, index) => (
+            <ItemCard
+              canRemove={props.items.length > 1}
+              key={index}
+              onRemove={() =>
+                onChange(
+                  section.id,
+                  replaceSectionProps(section, {
+                    ...props,
+                    items: removeArrayItem(props.items, index),
+                  }),
+                )
+              }
+              title={`问题 ${index + 1}`}
+            >
+              <Field
+                label="问题"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, question: value }),
+                    }),
+                  )
+                }
+                value={item.question}
+              />
+              <Field
+                label="回答"
+                multiline
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, answer: value }),
+                    }),
+                  )
+                }
+                value={item.answer}
+              />
+            </ItemCard>
+          ))}
+          <AddButton
+            label="添加问题"
+            onClick={() =>
+              onChange(
+                section.id,
+                replaceSectionProps(section, {
+                  ...props,
+                  items: [
+                    ...props.items,
+                    { question: "新问题", answer: "对应的回答内容。" },
+                  ],
+                }),
+              )
+            }
+          />
+        </div>
+      </SectionShell>
+    );
+  }
+
+  if (section.type === "partners") {
+    const props = section.props;
+
+    return (
+      <SectionShell caption="模块属性" title="合作伙伴">
+        <Field
+          label="标题"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, title: value }))
+          }
+          value={props.title}
+        />
+        <Field
+          label="描述"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, description: value }))
+          }
+          value={props.description}
+        />
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-slate-700">合作伙伴列表</p>
+          {props.items.map((item, index) => (
+            <ItemCard
+              canRemove={props.items.length > 1}
+              key={index}
+              onRemove={() =>
+                onChange(
+                  section.id,
+                  replaceSectionProps(section, {
+                    ...props,
+                    items: removeArrayItem(props.items, index),
+                  }),
+                )
+              }
+              title={`伙伴 ${index + 1}`}
+            >
+              <Field
+                label="名称"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, name: value }),
+                    }),
+                  )
+                }
+                value={item.name}
+              />
+            </ItemCard>
+          ))}
+          <AddButton
+            label="添加伙伴"
+            onClick={() =>
+              onChange(
+                section.id,
+                replaceSectionProps(section, {
+                  ...props,
+                  items: [...props.items, { name: "新合作伙伴", logoText: "新合作伙伴" }],
+                }),
+              )
+            }
+          />
+        </div>
+      </SectionShell>
+    );
+  }
+
+  if (section.type === "team-members") {
+    const props = section.props;
+
+    return (
+      <SectionShell caption="模块属性" title="团队成员">
+        <Field
+          label="标题"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, title: value }))
+          }
+          value={props.title}
+        />
+        <Field
+          label="描述"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, description: value }))
+          }
+          value={props.description}
+        />
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-slate-700">成员列表</p>
+          {props.items.map((item, index) => (
+            <ItemCard
+              canRemove={props.items.length > 1}
+              key={index}
+              onRemove={() =>
+                onChange(
+                  section.id,
+                  replaceSectionProps(section, {
+                    ...props,
+                    items: removeArrayItem(props.items, index),
+                  }),
+                )
+              }
+              title={`成员 ${index + 1}`}
+            >
+              <Field
+                label="姓名"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, name: value }),
+                    }),
+                  )
+                }
+                value={item.name}
+              />
+              <Field
+                label="职位"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, title: value }),
+                    }),
+                  )
+                }
+                value={item.title}
+              />
+              <Field
+                label="简介"
+                multiline
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, bio: value }),
+                    }),
+                  )
+                }
+                value={item.bio}
+              />
+            </ItemCard>
+          ))}
+          <AddButton
+            label="添加成员"
+            onClick={() =>
+              onChange(
+                section.id,
+                replaceSectionProps(section, {
+                  ...props,
+                  items: [
+                    ...props.items,
+                    { name: "新成员", title: "职位", bio: "成员简介。", avatar: "" },
+                  ],
+                }),
+              )
+            }
+          />
+        </div>
+      </SectionShell>
+    );
+  }
+
   return null;
 }

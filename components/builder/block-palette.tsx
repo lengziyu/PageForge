@@ -179,6 +179,72 @@ function MiniCtaPreview() {
   );
 }
 
+function MiniTestimonialsPreview() {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="mb-2 h-2 w-24 rounded bg-slate-300" />
+      <div className="grid grid-cols-3 gap-2">
+        {[0, 1, 2].map((i) => (
+          <div className="rounded-lg border border-slate-200 bg-white p-2" key={i}>
+            <div className="flex gap-0.5 mb-1">
+              {[0,1,2,3,4].map((s) => <div className="h-1.5 w-1.5 rounded-full bg-amber-400" key={s} />)}
+            </div>
+            <div className="h-2 w-full rounded bg-slate-200" />
+            <div className="mt-1 h-2 w-3/4 rounded bg-slate-100" />
+            <div className="mt-2 h-2 w-2/3 rounded bg-slate-300" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniFaqPreview() {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mb-2 h-3 w-20 rounded bg-slate-300" />
+      <div className="space-y-1.5">
+        {[0, 1, 2].map((i) => (
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" key={i}>
+            <div className="h-2 w-3/4 rounded bg-slate-200" />
+            <div className="h-3 w-3 rounded-full border border-slate-300" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniPartnersPreview() {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mb-2 mx-auto h-2 w-20 rounded bg-slate-300" />
+      <div className="grid grid-cols-4 gap-2">
+        {[0,1,2,3,4,5,6,7].map((i) => (
+          <div className="h-6 rounded-lg border border-slate-200 bg-slate-50" key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniTeamPreview() {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mb-2 h-2 w-20 rounded bg-slate-300" />
+      <div className="grid grid-cols-4 gap-2">
+        {[0,1,2,3].map((i) => (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2" key={i}>
+            <div className="mx-auto mb-1 h-8 w-8 rounded-full bg-slate-200" />
+            <div className="h-2 w-full rounded bg-slate-300" />
+            <div className="mt-1 h-1.5 w-3/4 rounded bg-slate-200" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function BlockPreview({ type }: { type: BuilderBlockType }) {
   switch (type) {
     case "hero":
@@ -199,6 +265,14 @@ function BlockPreview({ type }: { type: BuilderBlockType }) {
       return <MiniContactPreview />;
     case "cta":
       return <MiniCtaPreview />;
+    case "testimonials":
+      return <MiniTestimonialsPreview />;
+    case "faq":
+      return <MiniFaqPreview />;
+    case "partners":
+      return <MiniPartnersPreview />;
+    case "team-members":
+      return <MiniTeamPreview />;
     default:
       return null;
   }
