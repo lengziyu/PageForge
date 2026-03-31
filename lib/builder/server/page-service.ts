@@ -17,7 +17,7 @@ import { enterprisePageCatalog } from "@/lib/builder/template-catalog";
 import { buildSiteTemplateDocuments } from "@/lib/builder/template-library";
 import type { FooterTemplateId } from "@/lib/builder/site-config";
 import { replaceDemoNewsArticles } from "@/lib/news/server/news-service";
-import { getPrismaClient } from "@/lib/prisma";
+import { ensureAppDatabaseSchema, getPrismaClient } from "@/lib/prisma";
 
 type PageRecord = {
   slug: string;
@@ -151,6 +151,8 @@ async function seedDemoNewsSafely(input: { siteName: string; keyword: string }) 
 
 export async function listPages(): Promise<BuilderPageListItem[]> {
   try {
+    await ensureAppDatabaseSchema();
+
     const pages = await getPrismaClient().sitePage.findMany({
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       select: pageListSelect,
@@ -171,6 +173,8 @@ export async function listPages(): Promise<BuilderPageListItem[]> {
 
 export async function listPublishedPages(): Promise<BuilderPageListItem[]> {
   try {
+    await ensureAppDatabaseSchema();
+
     const pages = await getPrismaClient().sitePage.findMany({
       where: {
         status: "PUBLISHED",
@@ -200,6 +204,8 @@ export async function getEditablePageBySlug(
   slug: string,
 ): Promise<BuilderPageResponse> {
   try {
+    await ensureAppDatabaseSchema();
+
     const page = await getPrismaClient().sitePage.findUnique({
       where: { slug },
       select: pageRecordSelect,
@@ -220,6 +226,8 @@ export async function getPublishedPageBySlug(
   slug: string,
 ): Promise<BuilderPageResponse | null> {
   try {
+    await ensureAppDatabaseSchema();
+
     const page = await getPrismaClient().sitePage.findFirst({
       where: {
         slug,
@@ -251,6 +259,8 @@ export async function createPage(input: {
   title: string;
   slug?: string;
 }): Promise<BuilderPageResponse> {
+  await ensureAppDatabaseSchema();
+
   const normalizedSlug = normalizePageSlug(input.slug?.trim() || input.title);
 
   if (!normalizedSlug) {
@@ -297,6 +307,8 @@ export async function createPagesFromTemplate(
     footerTemplate?: FooterTemplateId;
   },
 ): Promise<BuilderPageResponse[]> {
+  await ensureAppDatabaseSchema();
+
   const documents = buildSiteTemplateDocuments(
     templateId,
     selectedPages,
@@ -375,6 +387,8 @@ export async function createPagesFromTemplate(
 }
 
 export async function deletePageBySlug(slug: string) {
+  await ensureAppDatabaseSchema();
+
   if (slug === defaultPageDocument.page.slug) {
     throw new PageServiceError("DELETE_FORBIDDEN", "首页暂不支持删除。");
   }
@@ -403,6 +417,8 @@ export async function savePageBySlug(
   document: BuilderPageDocument,
   status: BuilderPageStatus,
 ): Promise<BuilderPageResponse> {
+  await ensureAppDatabaseSchema();
+
   const parsedDocument = pageDocumentSchema.parse({
     ...document,
     page: {
@@ -439,6 +455,8 @@ export async function publishSite(input?: {
   currentPageSlug?: string;
   currentDocument?: BuilderPageDocument;
 }) {
+  await ensureAppDatabaseSchema();
+
   if (input?.currentPageSlug && input.currentDocument) {
     await savePageBySlug(input.currentPageSlug, input.currentDocument, "PUBLISHED");
 

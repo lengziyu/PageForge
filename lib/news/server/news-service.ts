@@ -5,7 +5,7 @@ import type {
   SiteNewsStatus,
   SiteNewsSummary,
 } from "@/lib/news/contracts";
-import { getPrismaClient } from "@/lib/prisma";
+import { ensureAppDatabaseSchema, getPrismaClient } from "@/lib/prisma";
 
 const defaultNewsCategories = ["品牌动态", "行业观点", "媒体报道"];
 
@@ -95,6 +95,8 @@ function mapCategory(record: {
 }
 
 async function ensureDefaultNewsCategories() {
+  await ensureAppDatabaseSchema();
+
   await Promise.all(
     defaultNewsCategories.map((name) =>
       getPrismaClient().siteNewsCategory.upsert({
