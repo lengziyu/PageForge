@@ -1,5 +1,7 @@
 const ADMIN_SESSION_COOKIE = "pageforge_admin_session";
 const ADMIN_SESSION_PREFIX = "pageforge-admin";
+export const DEFAULT_ADMIN_USERNAME = "admin";
+export const DEFAULT_ADMIN_PASSWORD = "admin123";
 
 function toHex(buffer: ArrayBuffer) {
   return Array.from(new Uint8Array(buffer))
@@ -12,12 +14,8 @@ export function getAdminSessionCookieName() {
 }
 
 export function getAdminCredentials() {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-
-  if (!username || !password) {
-    return null;
-  }
+  const username = process.env.ADMIN_USERNAME ?? DEFAULT_ADMIN_USERNAME;
+  const password = process.env.ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD;
 
   return { username, password };
 }
@@ -35,10 +33,6 @@ export async function createAdminSessionToken(username: string, password: string
 export async function getExpectedAdminSessionToken() {
   const credentials = getAdminCredentials();
 
-  if (!credentials) {
-    return null;
-  }
-
   return createAdminSessionToken(credentials.username, credentials.password);
 }
 
@@ -48,10 +42,6 @@ export async function isValidAdminSession(token?: string | null) {
   }
 
   const expectedToken = await getExpectedAdminSessionToken();
-
-  if (!expectedToken) {
-    return true;
-  }
 
   return token === expectedToken;
 }

@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import {
+  DEFAULT_ADMIN_PASSWORD,
+  DEFAULT_ADMIN_USERNAME,
+} from "@/lib/auth/admin-session";
 
 type AdminLoginFormProps = {
   authEnabled: boolean;
@@ -11,10 +15,12 @@ type AdminLoginFormProps = {
 export function AdminLoginForm({ authEnabled }: AdminLoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState(DEFAULT_ADMIN_USERNAME);
+  const [password, setPassword] = useState(DEFAULT_ADMIN_PASSWORD);
   const [message, setMessage] = useState(
-    authEnabled ? "请输入管理员账号密码。" : "当前环境未启用后台登录保护。",
+    authEnabled
+      ? "请输入管理员账号密码，默认管理员为 admin / admin123。"
+      : "当前环境未启用后台登录保护。",
   );
   const [isPending, startTransition] = useTransition();
 
@@ -63,6 +69,12 @@ export function AdminLoginForm({ authEnabled }: AdminLoginFormProps) {
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          <p className="font-medium">默认管理员账号</p>
+          <p className="mt-1">账号：admin</p>
+          <p>密码：admin123</p>
+        </div>
+
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-slate-700">用户名</span>
           <input

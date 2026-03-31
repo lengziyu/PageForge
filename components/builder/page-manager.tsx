@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { SitePageDashboard } from "@/components/builder/site-page-dashboard";
 import { SiteTemplateStarter } from "@/components/builder/site-template-starter";
 import type {
@@ -200,8 +201,11 @@ export function PageManager({ initialPages }: PageManagerProps) {
               </div>
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
-              {message}
+            <div className="flex flex-col items-start gap-3 lg:items-end">
+              <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+                {message}
+              </div>
+              <AdminLogoutButton />
             </div>
           </div>
         </header>

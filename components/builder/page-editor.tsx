@@ -18,6 +18,7 @@ import {
   arrayMove,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { BlockInspector } from "@/components/builder/block-inspector";
 import { BlockPalette } from "@/components/builder/block-palette";
 import { SitePageNav } from "@/components/builder/site-page-nav";
@@ -451,7 +452,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-start gap-3">
               <Link
                 className="rounded-lg border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
                 href="/editor"
@@ -495,6 +496,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
               >
                 {isSaving ? "处理中..." : "发布整站"}
               </button>
+              <AdminLogoutButton />
             </div>
           </div>
         </header>
@@ -502,7 +504,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
         <SitePageNav currentSlug={initialPage.slug} pages={sitePages} />
 
         <div className={gridClassName}>
-          <div className="xl:sticky xl:top-4 xl:self-start">
+          <div className="min-w-0 xl:sticky xl:top-4 xl:self-start">
             <BlockPalette onAddBlock={handleAddBlock} />
           </div>
 

@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
 import {
-  getAdminCredentials,
   getAdminSessionCookieName,
   isValidAdminSession,
 } from "@/lib/auth/admin-session";
@@ -27,8 +26,6 @@ export default async function AdminLoginPage({
     redirect(nextPath);
   }
 
-  const authEnabled = Boolean(getAdminCredentials());
-
   return (
     <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,#e8eefb_0%,#f8fafc_45%,#eef2f7_100%)] px-4 py-10">
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(79,70,229,0.06),transparent_35%,rgba(15,23,42,0.04)_100%)]" />
@@ -45,6 +42,9 @@ export default async function AdminLoginPage({
           <p className="mt-6 max-w-lg text-base leading-8 text-slate-600">
             公开访问默认进入已发布官网首页，管理人员通过登录页进入页面编辑、模板替换、新闻中心与整站发布流程。
           </p>
+          <div className="mt-6 inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 shadow-sm">
+            默认管理员账号：admin　密码：admin123
+          </div>
           <div className="mt-8 grid max-w-lg grid-cols-2 gap-4">
             {[
               "独立页面管理",
@@ -62,7 +62,7 @@ export default async function AdminLoginPage({
           </div>
         </div>
 
-        <AdminLoginForm authEnabled={authEnabled} />
+        <AdminLoginForm authEnabled />
       </div>
     </main>
   );

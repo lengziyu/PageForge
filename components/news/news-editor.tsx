@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { RichTextEditor } from "@/components/news/rich-text-editor";
 import type { SiteNewsArticle, SiteNewsCategory } from "@/lib/news/contracts";
 
@@ -83,7 +84,7 @@ export function NewsEditor({ initialArticle, categories }: NewsEditorProps) {
               <p className="mt-3 text-sm text-slate-300">{message}</p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-start gap-3">
               <Link
                 className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-white"
                 href="/editor/newsroom"
@@ -107,6 +108,7 @@ export function NewsEditor({ initialArticle, categories }: NewsEditorProps) {
               >
                 {isSaving ? "处理中..." : "发布新闻"}
               </button>
+              <AdminLogoutButton />
             </div>
           </div>
         </header>

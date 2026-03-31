@@ -303,7 +303,7 @@ function DraggablePaletteItem({
     <button
       {...attributes}
       {...listeners}
-      className={`group w-full rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#fbfcff_0%,#f4f6fb_100%)] p-4 text-left transition hover:border-indigo-300 hover:shadow-[0_12px_24px_rgba(99,102,241,0.08)] ${
+      className={`group w-full overflow-hidden rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#fbfcff_0%,#f4f6fb_100%)] p-4 text-left transition hover:border-indigo-300 hover:shadow-[0_12px_24px_rgba(99,102,241,0.08)] ${
         isDragging ? "opacity-70" : ""
       }`}
       onClick={onClick}
@@ -335,7 +335,7 @@ function DraggablePaletteItem({
 
 export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
   return (
-    <aside className="overflow-x-hidden rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
+    <aside className="min-w-0 overflow-x-hidden rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
       <div className="mb-4">
         <p className="text-xs uppercase tracking-[0.24em] text-slate-500">模块库</p>
         <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
@@ -346,7 +346,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
         </p>
       </div>
 
-      <div className="grid gap-3 overflow-x-hidden xl:max-h-[calc(100vh-11rem)] xl:overflow-y-auto xl:pr-1">
+      <div className="min-w-0 grid gap-3 overflow-x-hidden xl:max-h-[calc(100vh-11rem)] xl:overflow-y-auto xl:pr-1">
         {blockDefinitions.map((block) => (
           <DraggablePaletteItem
             key={block.type}

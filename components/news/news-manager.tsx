@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import type {
   SiteNewsCategory,
   SiteNewsStatus,
@@ -249,13 +250,16 @@ export function NewsManager({
               <h1 className="mt-3 text-3xl font-semibold">新闻中心</h1>
               <p className="mt-3 text-sm text-slate-300">{message}</p>
             </div>
-            <Link
-              className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-white"
-              href="/editor"
-              style={{ color: "#ffffff" }}
-            >
-              返回页面管理
-            </Link>
+            <div className="flex flex-wrap items-start gap-3">
+              <Link
+                className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-white"
+                href="/editor"
+                style={{ color: "#ffffff" }}
+              >
+                返回页面管理
+              </Link>
+              <AdminLogoutButton />
+            </div>
           </div>
         </header>
 
