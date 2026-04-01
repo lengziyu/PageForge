@@ -6,6 +6,17 @@ import { useRouter } from "next/navigation";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { SitePageDashboard } from "@/components/builder/site-page-dashboard";
 import { SiteTemplateStarter } from "@/components/builder/site-template-starter";
+import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type {
   BuilderPageListItem,
   BuilderPageResponse,
@@ -26,12 +37,23 @@ type TemplateCreateResponse = {
   message?: string;
 };
 
+type ConfirmDialogState = {
+  title: string;
+  description: string;
+  actionLabel: string;
+  onConfirm: () => void;
+};
+
 export function PageManager({ initialPages }: PageManagerProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [message, setMessage] = useState(
     "请选择行业模板并勾选要生成的页面，完成后会自动进入首页编辑。",
+  );
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmDialogState, setConfirmDialogState] = useState<ConfirmDialogState | null>(
+    null,
   );
   const [isSubmitting, startTransition] = useTransition();
 
@@ -159,41 +181,45 @@ export function PageManager({ initialPages }: PageManagerProps) {
   };
 
   const handleDeletePage = (page: BuilderPageListItem) => {
-    if (!window.confirm(`确认删除页面“${page.title}”吗？此操作不可撤销。`)) {
-      return;
-    }
+    setConfirmDialogState({
+      title: "删除页面",
+      description: `确认删除页面“${page.title}”吗？此操作不可撤销。`,
+      actionLabel: "确认删除",
+      onConfirm: () => {
+        startTransition(async () => {
+          const response = await fetch(`/api/pages/${page.slug}`, {
+            method: "DELETE",
+          });
 
-    startTransition(async () => {
-      const response = await fetch(`/api/pages/${page.slug}`, {
-        method: "DELETE",
-      });
+          const payload = (await response.json()) as { message?: string };
 
-      const payload = (await response.json()) as { message?: string };
+          if (!response.ok) {
+            setMessage(payload.message ?? "页面删除失败。");
+            return;
+          }
 
-      if (!response.ok) {
-        setMessage(payload.message ?? "页面删除失败。");
-        return;
-      }
-
-      setMessage(payload.message ?? `页面“${page.title}”已删除。`);
-      router.refresh();
+          setMessage(payload.message ?? `页面“${page.title}”已删除。`);
+          router.refresh();
+        });
+      },
     });
+    setConfirmDialogOpen(true);
   };
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#eef2f8_0%,#f7f9fc_100%)] px-4 py-6 md:px-6">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-xl border border-slate-200 bg-slate-950 px-6 py-6 text-white shadow-lg">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+    <main className="min-h-screen px-4 py-5 md:px-6">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <header className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2.5">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                 企业官网建站器
               </p>
               <div>
-                <h1 className="text-3xl font-semibold tracking-tight">
+                <h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
                   {hasDatabasePages ? "页面管理" : "选择行业模板"}
                 </h1>
-                <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-300">
+                <p className="mt-1.5 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
                   {hasDatabasePages
                     ? "当前站点已经初始化完成。你可以继续新建页面，也可以重新选择行业模板覆盖当前站点。"
                     : "先选行业模板并生成标准页面，再进入拖拽编辑器逐页修改。"}
@@ -201,11 +227,12 @@ export function PageManager({ initialPages }: PageManagerProps) {
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-3 lg:items-end">
-              <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+            <div className="flex flex-col items-start gap-2 lg:items-end">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)] px-3 py-1.5 text-[11px] text-[var(--muted-foreground)] md:text-xs">
                 {message}
               </div>
-              <AdminLogoutButton />
+              <BrandThemeSwitcher />
+              <AdminLogoutButton className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]" />
             </div>
           </div>
         </header>
@@ -233,13 +260,48 @@ export function PageManager({ initialPages }: PageManagerProps) {
 
         <div className="flex justify-start">
           <Link
-            className="inline-flex rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            className="inline-flex rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 md:text-sm"
             href="/"
           >
             返回首页
           </Link>
         </div>
       </div>
+
+      <AlertDialog
+        onOpenChange={(open) => {
+          setConfirmDialogOpen(open);
+          if (!open) {
+            setConfirmDialogState(null);
+          }
+        }}
+        open={confirmDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialogState?.title ?? "确认操作"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialogState?.description ?? "请确认是否继续执行该操作。"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="inline-flex h-9 items-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--foreground)]">
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="inline-flex h-9 items-center rounded-md bg-rose-600 px-3 text-sm font-medium text-white transition hover:bg-rose-700"
+              onClick={() => {
+                const action = confirmDialogState?.onConfirm;
+                setConfirmDialogOpen(false);
+                setConfirmDialogState(null);
+                action?.();
+              }}
+            >
+              {confirmDialogState?.actionLabel ?? "确认"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BrandThemeProvider } from "@/components/theme/brand-theme-provider";
 import "./globals.css";
 import "@wangeditor/editor/dist/css/style.css";
 
@@ -13,8 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
-      <body>{children}</body>
+    <html data-brand="blue" lang="zh-CN" suppressHydrationWarning>
+      <body>
+        <BrandThemeProvider>{children}</BrandThemeProvider>
+      </body>
     </html>
   );
 }

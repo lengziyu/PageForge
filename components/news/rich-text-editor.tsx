@@ -7,6 +7,7 @@ import type {
   IEditorConfig,
   IToolbarConfig,
 } from "@wangeditor/editor";
+import { uploadBrowserFile } from "@/lib/media/client";
 
 const WangToolbar = dynamic(
   () => import("@wangeditor/editor-for-react").then((mod) => mod.Toolbar),
@@ -21,16 +22,8 @@ const WangEditor = dynamic(
 type RichTextEditorProps = {
   value: string;
   onChange: (value: string) => void;
+  uploadFolder?: "news" | "products" | "site" | "blocks";
 };
-
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("文件读取失败"));
-    reader.readAsDataURL(file);
-  });
-}
 
 function buildImageHtml(src: string, alt = "") {
   return `<img src="${src}" alt="${alt}" />`;
@@ -40,7 +33,11 @@ function buildVideoHtml(src: string) {
   return `<video src="${src}" controls="true"></video>`;
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  uploadFolder = "news",
+}: RichTextEditorProps) {
   const [editor, setEditor] = useState<IDomEditor | null>(null);
 
   useEffect(() => {
@@ -86,8 +83,8 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
             file: File,
             insertFn: (url: string, alt?: string, href?: string) => void,
           ) {
-            const dataUrl = await readFileAsDataUrl(file);
-            insertFn(dataUrl, file.name, dataUrl);
+            const url = await uploadBrowserFile(file, uploadFolder);
+            insertFn(url, file.name, url);
           },
         },
         uploadVideo: {
@@ -95,8 +92,8 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
             file: File,
             insertFn: (url: string, poster?: string) => void,
           ) {
-            const dataUrl = await readFileAsDataUrl(file);
-            insertFn(dataUrl, "");
+            const url = await uploadBrowserFile(file, uploadFolder);
+            insertFn(url, "");
           },
         },
       },
@@ -124,10 +121,10 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
                 return;
               }
 
-              const dataUrl = await readFileAsDataUrl(file);
+              const url = await uploadBrowserFile(file, uploadFolder);
               const html = file.type.startsWith("image/")
-                ? buildImageHtml(dataUrl, file.name)
-                : buildVideoHtml(dataUrl);
+                ? buildImageHtml(url, file.name)
+                : buildVideoHtml(url);
 
               currentEditor.dangerouslyInsertHtml(html);
             }),
@@ -147,7 +144,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
         return false;
       },
     }),
-    [],
+    [uploadFolder],
   );
 
   return (

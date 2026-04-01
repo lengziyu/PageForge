@@ -40,11 +40,18 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/editor/:path*",
+    "/api/uploads",
     "/api/pages",
     "/api/pages/:path*",
     "/api/site-templates",
     "/api/site/publish",
     "/api/news",
     "/api/news/:path*",
+    "/api/news/categories",
+    "/api/news/categories/:path*",
+    "/api/products",
+    "/api/products/:path*",
+    "/api/products/categories",
+    "/api/products/categories/:path*",
   ],
 };

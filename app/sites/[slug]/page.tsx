@@ -7,6 +7,7 @@ import {
   listPublishedPages,
 } from "@/lib/builder/server/page-service";
 import { listPublishedNewsArticles } from "@/lib/news/server/news-service";
+import { listPublishedProducts } from "@/lib/products/server/product-service";
 
 type SitePageProps = {
   params: Promise<{
@@ -41,10 +42,11 @@ export async function generateMetadata({
 export default async function SitePage({ params }: SitePageProps) {
   const { slug } = await params;
   const newsLimit = slug === "news" ? 100 : 12;
-  const [page, pages, newsArticles] = await Promise.all([
+  const [page, pages, newsArticles, products] = await Promise.all([
     getPublishedPageBySlug(slug),
     listPublishedPages(),
     listPublishedNewsArticles(newsLimit),
+    listPublishedProducts(12),
   ]);
 
   if (!page) {
@@ -63,6 +65,7 @@ export default async function SitePage({ params }: SitePageProps) {
           slug: article.slug,
           coverImage: article.coverImage,
         }))}
+        products={products}
       />
     </SiteShell>
   );

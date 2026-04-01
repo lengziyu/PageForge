@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { uploadBrowserFile } from "@/lib/media/client";
 import type { FeatureIcon } from "@/lib/builder/blocks/feature-list";
 import { heroImagePresets } from "@/lib/builder/hero-media";
 import type { BuilderPageSection } from "@/lib/builder/schema";
@@ -41,7 +42,7 @@ type ItemCardProps = {
 };
 
 const inputClassName =
-  "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-700";
+  "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-700";
 
 const featureIcons = [
   { value: "layers", label: "模块" },
@@ -51,15 +52,6 @@ const featureIcons = [
   { value: "globe", label: "全球" },
   { value: "chip", label: "技术" },
 ] as const;
-
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("文件读取失败"));
-    reader.readAsDataURL(file);
-  });
-}
 
 function replaceSectionProps<T extends BuilderPageSection>(
   section: T,
@@ -81,11 +73,11 @@ function removeArrayItem<T>(items: T[], index: number): T[] {
 
 function Field({ label, value, onChange, multiline = false }: FieldProps) {
   return (
-    <label className="space-y-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium text-slate-700 md:text-sm">{label}</span>
       {multiline ? (
         <textarea
-          className={`${inputClassName} min-h-28 resize-y`}
+          className={`${inputClassName} min-h-24 resize-y`}
           onChange={(event) => onChange(event.target.value)}
           value={value}
         />
@@ -102,8 +94,8 @@ function Field({ label, value, onChange, multiline = false }: FieldProps) {
 
 function SelectField({ label, value, options, onChange }: SelectFieldProps) {
   return (
-    <label className="space-y-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium text-slate-700 md:text-sm">{label}</span>
       <select
         className={inputClassName}
         onChange={(event) => onChange(event.target.value)}
@@ -121,10 +113,10 @@ function SelectField({ label, value, options, onChange }: SelectFieldProps) {
 
 function SectionShell({ title, caption, children }: SectionShellProps) {
   return (
-    <aside className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <aside className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{caption}</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{caption}</p>
+        <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-slate-950">
           {title}
         </h3>
       </div>
@@ -135,11 +127,11 @@ function SectionShell({ title, caption, children }: SectionShellProps) {
 
 function ItemCard({ title, canRemove, onRemove, children }: ItemCardProps) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="mb-2 flex items-center justify-between">
         <p className="text-sm font-medium text-slate-800">{title}</p>
         <button
-          className="text-sm font-medium text-rose-600 disabled:text-slate-300"
+          className="text-xs font-medium text-rose-600 disabled:text-slate-300 md:text-sm"
           disabled={!canRemove}
           onClick={onRemove}
           type="button"
@@ -161,7 +153,7 @@ function AddButton({
 }) {
   return (
     <button
-      className="w-full rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-900 transition hover:bg-indigo-100"
+      className="w-full rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-900 transition hover:bg-indigo-100 md:text-sm"
       onClick={onClick}
       type="button"
     >
@@ -272,11 +264,15 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                 return;
               }
 
-              const dataUrl = await readFileAsDataUrl(file);
-              onChange(
-                section.id,
-                replaceSectionProps(section, { ...props, backgroundImageSrc: dataUrl }),
-              );
+              try {
+                const url = await uploadBrowserFile(file, "blocks");
+                onChange(
+                  section.id,
+                  replaceSectionProps(section, { ...props, backgroundImageSrc: url }),
+                );
+              } catch (error) {
+                console.error("Failed to upload block asset", error);
+              }
             }}
             type="file"
           />
@@ -487,6 +483,66 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
           }
           value={props.description}
         />
+        <SelectField
+          label="内容来源"
+          onChange={(value) =>
+            onChange(
+              section.id,
+              replaceSectionProps(section, {
+                ...props,
+                sourceMode: value as "manual" | "products",
+              }),
+            )
+          }
+          options={[
+            { value: "manual", label: "手动维护" },
+            { value: "products", label: "产品中心" },
+          ]}
+          value={props.sourceMode}
+        />
+        <SelectField
+          label="展示样式"
+          onChange={(value) =>
+            onChange(
+              section.id,
+              replaceSectionProps(section, {
+                ...props,
+                variant: value as "cards" | "split" | "compact",
+              }),
+            )
+          }
+          options={[
+            { value: "cards", label: "卡片网格" },
+            { value: "split", label: "图文交错" },
+            { value: "compact", label: "紧凑列表" },
+          ]}
+          value={props.variant}
+        />
+        <Field
+          label="展示数量"
+          onChange={(value) =>
+            onChange(
+              section.id,
+              replaceSectionProps(section, {
+                ...props,
+                showCount: Number(value || 3),
+              }),
+            )
+          }
+          value={String(props.showCount)}
+        />
+        <Field
+          label="详情按钮文案"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, ctaLabel: value }))
+          }
+          value={props.ctaLabel}
+        />
+        {props.sourceMode === "products" ? (
+          <div className="rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-4 py-4 text-sm leading-7 text-indigo-950">
+            当前模块会优先读取“产品中心”里已发布的产品内容。你仍然可以保留下面的手动卡片，作为暂无产品时的占位内容。
+          </div>
+        ) : null}
         <div className="space-y-4">
           {props.items.map((item, index) => (
             <ItemCard
@@ -530,6 +586,19 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                 value={item.title}
               />
               <Field
+                label="封面图地址"
+                onChange={(value) =>
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, {
+                      ...props,
+                      items: updateArrayItem(props.items, index, { ...item, coverImage: value }),
+                    }),
+                  )
+                }
+                value={item.coverImage}
+              />
+              <Field
                 label="描述"
                 multiline
                 onChange={(value) =>
@@ -562,6 +631,8 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                     tag: `0${props.items.length + 1}`,
                     title: "新增服务",
                     description: "补充新的服务内容、产品模块或解决方案说明。",
+                    slug: "",
+                    coverImage: "/hero/technology-platform.svg",
                   },
                 ],
               }),

@@ -303,7 +303,7 @@ function DraggablePaletteItem({
     <button
       {...attributes}
       {...listeners}
-      className={`group w-full overflow-hidden rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#fbfcff_0%,#f4f6fb_100%)] p-4 text-left transition hover:border-indigo-300 hover:shadow-[0_12px_24px_rgba(99,102,241,0.08)] ${
+      className={`group w-full overflow-hidden rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#fbfcff_0%,#f4f6fb_100%)] p-3 text-left transition hover:border-indigo-300 hover:shadow-[0_12px_24px_rgba(99,102,241,0.08)] ${
         isDragging ? "opacity-70" : ""
       }`}
       onClick={onClick}
@@ -311,9 +311,9 @@ function DraggablePaletteItem({
       style={style}
       type="button"
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2">
         <span className="min-w-0 text-sm font-semibold text-slate-950">{label}</span>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition group-hover:border-indigo-300 group-hover:text-indigo-700">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition group-hover:border-indigo-300 group-hover:text-indigo-700">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24">
             <path
               d="M12 5v14M5 12h14"
@@ -326,7 +326,7 @@ function DraggablePaletteItem({
         </span>
       </div>
 
-      <div className="mt-4 overflow-hidden">
+      <div className="mt-3 overflow-hidden">
         <BlockPreview type={type} />
       </div>
     </button>
@@ -335,18 +335,18 @@ function DraggablePaletteItem({
 
 export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
   return (
-    <aside className="min-w-0 overflow-x-hidden rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
-      <div className="mb-4">
+    <aside className="min-w-0 overflow-x-hidden rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
+      <div className="mb-3">
         <p className="text-xs uppercase tracking-[0.24em] text-slate-500">模块库</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+        <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-slate-950">
           可添加模块
         </h3>
-        <p className="mt-2 text-sm leading-7 text-slate-500">
+        <p className="mt-1.5 text-sm leading-6 text-slate-500">
           支持点击添加，也支持直接拖到中间画布。
         </p>
       </div>
 
-      <div className="min-w-0 grid gap-3 overflow-x-hidden xl:max-h-[calc(100vh-11rem)] xl:overflow-y-auto xl:pr-1">
+      <div className="min-w-0 grid gap-2.5 overflow-x-hidden xl:max-h-[calc(100vh-11rem)] xl:overflow-y-auto xl:pr-1">
         {blockDefinitions.map((block) => (
           <DraggablePaletteItem
             key={block.type}

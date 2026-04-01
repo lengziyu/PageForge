@@ -9,12 +9,17 @@ type EditorNewsroomDetailPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams: Promise<{
+    embed?: string;
+  }>;
 };
 
 export default async function EditorNewsroomDetailPage({
   params,
+  searchParams,
 }: EditorNewsroomDetailPageProps) {
   const { slug } = await params;
+  const { embed } = await searchParams;
   const [article, categories] = await Promise.all([
     getNewsArticleBySlug(slug),
     listNewsCategories(),
@@ -24,5 +29,11 @@ export default async function EditorNewsroomDetailPage({
     notFound();
   }
 
-  return <NewsEditor categories={categories} initialArticle={article} />;
+  return (
+    <NewsEditor
+      categories={categories}
+      embedded={embed === "1"}
+      initialArticle={article}
+    />
+  );
 }

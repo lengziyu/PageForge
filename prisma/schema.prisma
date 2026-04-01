@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -31,6 +32,30 @@ model SiteNewsArticle {
 }
 
 model SiteNewsCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteProduct {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  category       String
+  summary        String
+  coverImage     String
+  galleryJson    String   @default("[]")
+  highlightsJson String   @default("[]")
+  specsJson      String   @default("[]")
+  contentHtml    String
+  status         String   @default("DRAFT")
+  publishedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SiteProductCategory {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())

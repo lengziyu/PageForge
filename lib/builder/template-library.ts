@@ -90,21 +90,31 @@ function createServiceGrid(keyword: string): ServiceGridProps {
   return {
     title: "服务与产品",
     description: `围绕 ${keyword} 场景，拆解清晰的服务矩阵、解决方案和交付方式，方便客户快速理解你的能力。`,
+    sourceMode: "manual",
+    variant: "cards",
+    showCount: 3,
+    ctaLabel: "查看详情",
     items: [
       {
         tag: "01",
         title: "咨询策划",
         description: "从业务目标、客户画像到官网结构梳理，先把表达讲清楚，再进入页面搭建。",
+        slug: "",
+        coverImage: "/hero/about-studio.svg",
       },
       {
         tag: "02",
         title: "解决方案",
         description: "把复杂能力拆成更易理解的方案包、产品线和服务组合，降低商务沟通门槛。",
+        slug: "",
+        coverImage: "/hero/technology-platform.svg",
       },
       {
         tag: "03",
         title: "上线运营",
         description: "覆盖发布、内容迭代和持续优化，让官网长期服务业务增长。",
+        slug: "",
+        coverImage: "/hero/news-media-wall.svg",
       },
     ],
   };
@@ -281,7 +291,14 @@ function buildServicesProducts({ config, site }: TemplatePageBuilderContext) {
           secondaryCtaHref: pageUrl("about-us"),
         }),
       ),
-      createSection("services-products", "service-grid", createServiceGrid(config.keyword)),
+      createSection("services-products", "service-grid", {
+        ...createServiceGrid(config.keyword),
+        title: "用更丰富的产品形态讲清楚你的能力",
+        description: "支持产品详情、图集、亮点和规格参数，让服务与产品页面不再只是静态卡片。",
+        sourceMode: "products",
+        variant: "cards",
+        showCount: 6,
+      }),
       createSection("services-products", "feature-list", {
         title: "更适合企业官网的服务表达方式",
         description: "把服务页做成客户更容易理解、团队更容易维护的结构。",
@@ -475,7 +492,7 @@ const pageBuilders: Record<
 
 const templateMap: Record<SiteTemplateId, TemplateConfig> = {
   saas: {
-    siteName: "星云智链",
+    siteName: "超好用建站股份有限公司",
     siteTagline: "极简、可信、可持续演进的科技企业官网",
     logoSrc: "/brand/xingyun-logo.svg",
     keyword: "科技产品",

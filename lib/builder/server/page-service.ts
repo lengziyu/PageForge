@@ -17,6 +17,7 @@ import { enterprisePageCatalog } from "@/lib/builder/template-catalog";
 import { buildSiteTemplateDocuments } from "@/lib/builder/template-library";
 import type { FooterTemplateId } from "@/lib/builder/site-config";
 import { replaceDemoNewsArticles } from "@/lib/news/server/news-service";
+import { replaceDemoProducts } from "@/lib/products/server/product-service";
 import { ensureAppDatabaseSchema, getPrismaClient } from "@/lib/prisma";
 
 type PageRecord = {
@@ -146,6 +147,14 @@ async function seedDemoNewsSafely(input: { siteName: string; keyword: string }) 
     await replaceDemoNewsArticles(input);
   } catch (error) {
     console.warn("Skipping demo newsroom seed:", error);
+  }
+}
+
+async function seedDemoProductsSafely(input: { siteName: string; keyword: string }) {
+  try {
+    await replaceDemoProducts(input);
+  } catch (error) {
+    console.warn("Skipping demo products seed:", error);
   }
 }
 
@@ -348,6 +357,10 @@ export async function createPagesFromTemplate(
       siteName: pages[0]?.document.site.name ?? "企业站点",
       keyword: templateId,
     });
+    await seedDemoProductsSafely({
+      siteName: pages[0]?.document.site.name ?? "企业站点",
+      keyword: templateId,
+    });
 
     return pages;
   }
@@ -379,6 +392,10 @@ export async function createPagesFromTemplate(
 
   const pages: BuilderPageResponse[] = sortPageList(createdPages).map(mapPageRecord);
   await seedDemoNewsSafely({
+    siteName: pages[0]?.document.site.name ?? "企业站点",
+    keyword: templateId,
+  });
+  await seedDemoProductsSafely({
     siteName: pages[0]?.document.site.name ?? "企业站点",
     keyword: templateId,
   });

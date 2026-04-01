@@ -6,3 +6,5 @@ dist
 *.log
 prisma/*.db
 prisma/*.db-journal
+data
+public/uploads

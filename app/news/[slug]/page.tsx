@@ -58,7 +58,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
       <article className="mx-auto max-w-4xl px-6 py-16">
         <div className="mb-8">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-md bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-900">
+            <span className="rounded-md bg-[var(--primary-soft)] px-3 py-1 text-sm font-medium text-[var(--primary-strong)]">
               {article.category}
             </span>
             <span className="text-sm text-slate-500">

@@ -60,7 +60,7 @@ export function NewsListBlock({
     <section className={`px-6 py-18 md:px-10 md:py-22 ${isEditor ? "bg-slate-50" : "bg-white"}`}>
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-indigo-600">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-[var(--primary-strong)]">
             新闻资讯
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
@@ -73,12 +73,12 @@ export function NewsListBlock({
           {items.map((item, index) => {
             const dateInfo = formatDate(item.date);
             const href = `/news/${item.slug}`;
+            const articleClassName = isEditor
+              ? "grid gap-5 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[280px_140px_minmax(380px,1fr)_72px] md:items-center md:min-w-[940px]"
+              : "grid gap-5 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[280px_140px_minmax(0,1fr)_72px] md:items-center";
 
             return (
-              <article
-                className="grid gap-5 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[280px_140px_minmax(0,1fr)_72px] md:items-center"
-                key={`${item.slug}-${index}`}
-              >
+              <article className={articleClassName} key={`${item.slug}-${index}`}>
                 <img
                   alt={item.title}
                   className="h-44 w-full rounded-lg object-cover"
@@ -90,7 +90,7 @@ export function NewsListBlock({
                   </p>
                   <p className="mt-2 text-2xl text-slate-400">{dateInfo.year}</p>
                 </div>
-                <div>
+                <div className={isEditor ? "min-w-[380px]" : undefined}>
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-700">
                       {item.category}
@@ -102,14 +102,13 @@ export function NewsListBlock({
                   <p className="mt-4 text-base leading-8 text-slate-600">{item.summary}</p>
                 </div>
                 {isEditor ? (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-slate-200 text-2xl text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[var(--primary)] text-2xl text-[var(--primary-foreground)]">
                     →
                   </div>
                 ) : (
                   <Link
-                    className="flex h-12 w-12 items-center justify-center rounded-md bg-slate-200 text-2xl text-white transition hover:bg-slate-300"
+                    className="flex h-12 w-12 items-center justify-center rounded-md bg-[var(--primary)] text-2xl text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)]"
                     href={href}
-                    style={{ color: "#ffffff" }}
                   >
                     →
                   </Link>

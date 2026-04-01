@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7fb;
-  --foreground: #111827;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #93c5fd;
+  --secondary: #e0f2fe;
+  --secondary-foreground: #0c4a6e;
+  --warning-bg: #fbbf24;
+  --warning-border: #fcd34d;
+  --warning-foreground: #111827;
+  --primary: #2563eb;
+  --primary-foreground: #eff6ff;
+  --primary-strong: #1d4ed8;
+  --primary-soft: #dbeafe;
+  --page-glow: rgba(37, 99, 235, 0.1);
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #eef2f7;
 }
 
 * {
@@ -17,10 +36,14 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 28%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+    radial-gradient(circle at top left, var(--page-glow), transparent 28%),
+    linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
   color: var(--foreground);
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 24%, white);
 }
 
 a:not([class]) {
@@ -32,4 +55,105 @@ button,
 input,
 textarea {
   font: inherit;
+}
+
+[data-brand="blue"] {
+  --primary: #2563eb;
+  --primary-foreground: #eff6ff;
+  --primary-strong: #1d4ed8;
+  --primary-soft: #dbeafe;
+  --secondary: #e0f2fe;
+  --secondary-foreground: #0c4a6e;
+  --ring: #93c5fd;
+  --page-glow: rgba(37, 99, 235, 0.1);
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #eef2f7;
+}
+
+[data-brand="emerald"] {
+  --primary: #059669;
+  --primary-foreground: #ecfdf5;
+  --primary-strong: #047857;
+  --primary-soft: #d1fae5;
+  --secondary: #dcfce7;
+  --secondary-foreground: #14532d;
+  --ring: #6ee7b7;
+  --page-glow: rgba(5, 150, 105, 0.1);
+  --bg-gradient-start: #f6fcf9;
+  --bg-gradient-end: #ecf9f1;
+}
+
+[data-brand="amber"] {
+  --primary: #d97706;
+  --primary-foreground: #fffbeb;
+  --primary-strong: #b45309;
+  --primary-soft: #fef3c7;
+  --secondary: #fef3c7;
+  --secondary-foreground: #78350f;
+  --ring: #f59e0b;
+  --page-glow: rgba(217, 119, 6, 0.1);
+  --bg-gradient-start: #fffdf7;
+  --bg-gradient-end: #fff8e8;
+}
+
+[data-brand="rose"] {
+  --primary: #e11d48;
+  --primary-foreground: #fff1f2;
+  --primary-strong: #be123c;
+  --primary-soft: #ffe4e6;
+  --secondary: #ffe4e6;
+  --secondary-foreground: #881337;
+  --ring: #fb7185;
+  --page-glow: rgba(225, 29, 72, 0.1);
+  --bg-gradient-start: #fff9fa;
+  --bg-gradient-end: #fff1f4;
+}
+
+/* Compatibility mapping:
+Keep legacy indigo/slate utility classes visually aligned with current theme tokens. */
+html[data-brand] .bg-slate-950 {
+  background-color: var(--primary-strong) !important;
+}
+
+html[data-brand] .hover\:bg-slate-800:hover {
+  background-color: var(--primary) !important;
+}
+
+html[data-brand] .text-indigo-600,
+html[data-brand] .text-indigo-700,
+html[data-brand] .text-indigo-900 {
+  color: var(--primary-strong) !important;
+}
+
+html[data-brand] .text-indigo-300 {
+  color: color-mix(in srgb, var(--primary) 68%, white) !important;
+}
+
+html[data-brand] .bg-indigo-50,
+html[data-brand] .bg-indigo-100 {
+  background-color: var(--primary-soft) !important;
+}
+
+html[data-brand] .bg-indigo-600 {
+  background-color: var(--primary) !important;
+}
+
+html[data-brand] .border-indigo-100,
+html[data-brand] .border-indigo-200,
+html[data-brand] .border-indigo-300,
+html[data-brand] .border-indigo-500 {
+  border-color: color-mix(in srgb, var(--primary) 38%, white) !important;
+}
+
+html[data-brand] .focus\:border-indigo-400:focus,
+html[data-brand] .focus\:border-indigo-700:focus {
+  border-color: var(--ring) !important;
+}
+
+html[data-brand] .hover\:border-indigo-300:hover {
+  border-color: var(--primary) !important;
+}
+
+html[data-brand] .hover\:text-indigo-700:hover {
+  color: var(--primary-strong) !important;
 }

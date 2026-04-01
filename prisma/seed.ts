@@ -1,22 +1,34 @@
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { ensureAppDatabaseSchema } from "../lib/prisma";
 import { resolveSqliteUrl } from "../lib/sqlite-url";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not set. Check your .env file.");
-}
+const databaseUrl = process.env.DATABASE_URL ?? "file:./data/pageforge.db";
+const runtimeDatabaseUrl = databaseUrl.startsWith("file:")
+  ? `file:${resolveSqliteUrl(databaseUrl)}`
+  : databaseUrl;
 
-const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({
-    url: resolveSqliteUrl(process.env.DATABASE_URL),
-    timeout: 15000,
-  }),
+process.env.DATABASE_URL = runtimeDatabaseUrl;
+
+const adapter = new PrismaLibSql({
+  url: runtimeDatabaseUrl,
 });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  await ensureAppDatabaseSchema();
+
   for (const name of ["品牌动态", "行业观点", "媒体报道"]) {
     await prisma.siteNewsCategory.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+
+  for (const name of ["核心产品", "行业方案", "服务支持"]) {
+    await prisma.siteProductCategory.upsert({
       where: { name },
       update: {},
       create: { name },

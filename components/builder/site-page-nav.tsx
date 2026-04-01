@@ -38,33 +38,32 @@ export function SitePageNav({ currentSlug, pages }: SitePageNavProps) {
   const sortedPages = sortPages(pages);
 
   return (
-    <nav className="rounded-xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-      <div className="flex flex-wrap gap-2">
+    <nav className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-2.5 py-2 shadow-sm">
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
         {sortedPages.map((page) => {
           const isActive = page.slug === currentSlug;
 
           return (
             <Link
-              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs transition ${
                 isActive
-                  ? "bg-slate-950 text-white"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                  ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  : "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
               href={`/editor/pages/${page.slug}`}
               key={page.slug}
-              style={{ color: isActive ? "#ffffff" : "#334155" }}
             >
-              <span>{page.title}</span>
+              <span className="whitespace-nowrap">{page.title}</span>
               <span
-                className={`rounded-md px-2 py-0.5 text-[11px] ${
+                className={`rounded-md px-1.5 py-0.5 text-[10px] ${
                   isActive
-                    ? "bg-white/10 text-white"
+                    ? "bg-[color-mix(in_srgb,var(--primary-foreground)_14%,transparent)] text-[var(--primary-foreground)]"
                     : page.status === "PUBLISHED"
-                      ? "bg-indigo-100 text-indigo-900"
+                      ? "bg-[var(--primary-soft)] text-[var(--primary-strong)]"
                       : "bg-amber-100 text-amber-900"
                 }`}
               >
-                {page.status === "PUBLISHED" ? "已发布" : "草稿"}
+                {page.status === "PUBLISHED" ? "已发" : "草稿"}
               </span>
             </Link>
           );

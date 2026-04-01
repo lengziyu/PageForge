@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { uploadBrowserFile } from "@/lib/media/client";
 import { footerTemplateCatalog, type FooterTemplateId } from "@/lib/builder/site-config";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
 import type { BuilderSiteConfig } from "@/lib/builder/schema";
@@ -13,15 +14,6 @@ type SiteSettingsPanelProps = {
 };
 
 type PublicSettingsTab = "site" | "navigation" | "footer";
-
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("文件读取失败"));
-    reader.readAsDataURL(file);
-  });
-}
 
 function buildNavigationLink(page: BuilderPageListItem) {
   return {
@@ -113,17 +105,21 @@ export function SiteSettingsPanel({
       return;
     }
 
-    const dataUrl = await readFileAsDataUrl(file);
-    const nextSite = {
-      ...site,
-      [target]: dataUrl,
-    };
+    try {
+      const url = await uploadBrowserFile(file, "site");
+      const nextSite = {
+        ...site,
+        [target]: url,
+      };
 
-    if (target === "logoSrc" && !site.faviconSrc) {
-      nextSite.faviconSrc = dataUrl;
+      if (target === "logoSrc" && !site.faviconSrc) {
+        nextSite.faviconSrc = url;
+      }
+
+      onChange(nextSite);
+    } catch (error) {
+      console.error("Failed to upload site asset", error);
     }
-
-    onChange(nextSite);
   };
 
   const updateNavigationLinks = (nextLinks: BuilderSiteConfig["navigationLinks"]) => {

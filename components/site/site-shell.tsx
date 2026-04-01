@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
 import type { BuilderPageDocument } from "@/lib/builder/schema";
 
@@ -97,13 +98,15 @@ function FooterMinimal({ document }: { document: BuilderPageDocument }) {
   const footer = document.site.footer;
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-950 text-white">
+    <footer className="border-t border-slate-200 bg-[var(--primary-strong)] text-[var(--primary-foreground)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="font-semibold">{document.site.name}</p>
-          <p className="mt-1 text-sm text-slate-400">{footer.companyAddress}</p>
+          <p className="mt-1 text-sm text-[color-mix(in_srgb,var(--primary-foreground)_72%,transparent)]">
+            {footer.companyAddress}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-300">
+        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[color-mix(in_srgb,var(--primary-foreground)_86%,transparent)]">
           <span>{footer.phone}</span>
           <span>{footer.email}</span>
           <span>{footer.registrationNumber}</span>
@@ -166,18 +169,18 @@ export function SiteShell({
                   <Link
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                       isActive
-                        ? "bg-slate-950 text-white"
+                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                         : "text-slate-700 hover:bg-slate-100"
                     }`}
                     href={item.href}
                     key={item.slug}
-                    style={{ color: isActive ? "#ffffff" : "#334155" }}
                   >
                     {item.label}
                   </Link>
                 );
               })}
             </nav>
+            <BrandThemeSwitcher />
           </div>
         </div>
       </header>

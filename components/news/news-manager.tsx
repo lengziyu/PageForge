@@ -5,6 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
+import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type {
   SiteNewsCategory,
   SiteNewsStatus,
@@ -14,6 +25,13 @@ import type {
 type NewsManagerProps = {
   initialArticles: SiteNewsSummary[];
   initialCategories: SiteNewsCategory[];
+};
+
+type ConfirmDialogState = {
+  title: string;
+  description: string;
+  actionLabel: string;
+  onConfirm: () => void;
 };
 
 const pageSize = 6;
@@ -45,6 +63,10 @@ export function NewsManager({
   const [filter, setFilter] = useState<SiteNewsStatus | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState("在这里管理新闻列表、分类、草稿和详情页内容。");
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmDialogState, setConfirmDialogState] = useState<ConfirmDialogState | null>(
+    null,
+  );
   const [isSubmitting, startTransition] = useTransition();
 
   const filteredArticles = useMemo(() => {
@@ -94,42 +116,44 @@ export function NewsManager({
   };
 
   const handleDeleteArticle = (article: SiteNewsSummary) => {
-    const confirmed = window.confirm(`确认删除“${article.title}”吗？删除后无法恢复。`);
+    setConfirmDialogState({
+      title: "删除资讯",
+      description: `确认删除“${article.title}”吗？删除后不可恢复。`,
+      actionLabel: "确认删除",
+      onConfirm: () => {
+        startTransition(async () => {
+          const response = await fetch(`/api/news/${article.slug}`, {
+            method: "DELETE",
+          });
+          const payload = (await response.json()) as { message?: string };
 
-    if (!confirmed) {
-      return;
-    }
+          if (!response.ok) {
+            setMessage(payload.message ?? "新闻删除失败。");
+            return;
+          }
 
-    startTransition(async () => {
-      const response = await fetch(`/api/news/${article.slug}`, {
-        method: "DELETE",
-      });
-      const payload = (await response.json()) as { message?: string };
+          const nextArticles = articles.filter((item) => item.slug !== article.slug);
+          const nextFilteredCount =
+            filter === "ALL"
+              ? nextArticles.length
+              : nextArticles.filter((item) => item.status === filter).length;
+          const nextTotalPages = Math.max(1, Math.ceil(nextFilteredCount / pageSize));
 
-      if (!response.ok) {
-        setMessage(payload.message ?? "新闻删除失败。");
-        return;
-      }
-
-      const nextArticles = articles.filter((item) => item.slug !== article.slug);
-      const nextFilteredCount =
-        filter === "ALL"
-          ? nextArticles.length
-          : nextArticles.filter((item) => item.status === filter).length;
-      const nextTotalPages = Math.max(1, Math.ceil(nextFilteredCount / pageSize));
-
-      setArticles(nextArticles);
-      setCategories((current) =>
-        current.map((item) =>
-          item.name === article.category
-            ? { ...item, articleCount: Math.max(0, item.articleCount - 1) }
-            : item,
-        ),
-      );
-      setPage((value) => Math.min(value, nextTotalPages));
-      setMessage(`已删除新闻“${article.title}”。`);
-      router.refresh();
+          setArticles(nextArticles);
+          setCategories((current) =>
+            current.map((item) =>
+              item.name === article.category
+                ? { ...item, articleCount: Math.max(0, item.articleCount - 1) }
+                : item,
+            ),
+          );
+          setPage((value) => Math.min(value, nextTotalPages));
+          setMessage(`已删除新闻“${article.title}”。`);
+          router.refresh();
+        });
+      },
     });
+    setConfirmDialogOpen(true);
   };
 
   const handleCreateCategory = () => {
@@ -208,30 +232,32 @@ export function NewsManager({
   };
 
   const handleDeleteCategory = (category: SiteNewsCategory) => {
-    const confirmed = window.confirm(`确认删除分类“${category.name}”吗？`);
+    setConfirmDialogState({
+      title: "删除分类",
+      description: `确认删除分类“${category.name}”吗？`,
+      actionLabel: "确认删除",
+      onConfirm: () => {
+        startTransition(async () => {
+          const response = await fetch(`/api/news/categories/${category.id}`, {
+            method: "DELETE",
+          });
+          const payload = (await response.json()) as { message?: string };
 
-    if (!confirmed) {
-      return;
-    }
+          if (!response.ok) {
+            setMessage(payload.message ?? "分类删除失败。");
+            return;
+          }
 
-    startTransition(async () => {
-      const response = await fetch(`/api/news/categories/${category.id}`, {
-        method: "DELETE",
-      });
-      const payload = (await response.json()) as { message?: string };
-
-      if (!response.ok) {
-        setMessage(payload.message ?? "分类删除失败。");
-        return;
-      }
-
-      const nextCategories = categories.filter((item) => item.id !== category.id);
-      setCategories(nextCategories);
-      if (selectedCategory === category.name) {
-        setSelectedCategory(nextCategories[0]?.name ?? "");
-      }
-      setMessage(`已删除分类“${category.name}”。`);
+          const nextCategories = categories.filter((item) => item.id !== category.id);
+          setCategories(nextCategories);
+          if (selectedCategory === category.name) {
+            setSelectedCategory(nextCategories[0]?.name ?? "");
+          }
+          setMessage(`已删除分类“${category.name}”。`);
+        });
+      },
     });
+    setConfirmDialogOpen(true);
   };
 
   const filterOptions: Array<{ key: SiteNewsStatus | "ALL"; label: string }> = [
@@ -241,24 +267,32 @@ export function NewsManager({
   ];
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#eef2f8_0%,#f7f9fc_100%)] px-4 py-6 md:px-6">
+    <main className="min-h-screen px-4 py-6 md:px-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-xl border border-slate-200 bg-slate-950 px-6 py-6 text-white shadow-lg">
+        <header className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-6 py-5 shadow-sm">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">内容中心</p>
-              <h1 className="mt-3 text-3xl font-semibold">新闻中心</h1>
-              <p className="mt-3 text-sm text-slate-300">{message}</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
+                内容中心
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold text-[var(--foreground)]">新闻中心</h1>
+              <p className="mt-3 text-sm text-[var(--muted-foreground)]">{message}</p>
             </div>
             <div className="flex flex-wrap items-start gap-3">
               <Link
-                className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-white"
+                className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                 href="/editor"
-                style={{ color: "#ffffff" }}
               >
                 返回页面管理
               </Link>
-              <AdminLogoutButton />
+              <Link
+                className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                href="/editor/content"
+              >
+                内容中心
+              </Link>
+              <BrandThemeSwitcher />
+              <AdminLogoutButton className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]" />
             </div>
           </div>
         </header>
@@ -275,7 +309,7 @@ export function NewsManager({
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-slate-700">新闻标题</span>
                   <input
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-indigo-700"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-[var(--ring)]"
                     onChange={(event) => setTitle(event.target.value)}
                     placeholder="例如：公司完成年度产品升级发布"
                     value={title}
@@ -285,7 +319,7 @@ export function NewsManager({
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-slate-700">新闻分类</span>
                   <select
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-indigo-700"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-[var(--ring)]"
                     onChange={(event) => setSelectedCategory(event.target.value)}
                     value={selectedCategory}
                   >
@@ -298,7 +332,7 @@ export function NewsManager({
                 </label>
 
                 <button
-                  className="w-full rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="w-full rounded-lg bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSubmitting || !title.trim() || categories.length === 0}
                   onClick={handleCreate}
                   type="button"
@@ -319,13 +353,13 @@ export function NewsManager({
 
               <div className="mt-5 flex gap-2">
                 <input
-                  className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-indigo-700"
+                  className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-[var(--ring)]"
                   onChange={(event) => setCategoryDraft(event.target.value)}
                   placeholder="新增分类名称"
                   value={categoryDraft}
                 />
                 <button
-                  className="rounded-lg bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="rounded-lg bg-[var(--primary)] px-4 py-3 text-sm font-medium text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSubmitting || !categoryDraft.trim()}
                   onClick={handleCreateCategory}
                   type="button"
@@ -346,7 +380,7 @@ export function NewsManager({
                       <div className="flex flex-wrap items-center gap-2">
                         {isEditing ? (
                           <input
-                            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-indigo-700"
+                            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-[var(--ring)]"
                             onChange={(event) => setEditingCategoryName(event.target.value)}
                             value={editingCategoryName}
                           />
@@ -365,7 +399,7 @@ export function NewsManager({
                         {isEditing ? (
                           <>
                             <button
-                              className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-medium text-white"
+                              className="rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-medium text-[var(--primary-foreground)]"
                               disabled={isSubmitting || !editingCategoryName.trim()}
                               onClick={() => handleUpdateCategory(category)}
                               type="button"
@@ -427,7 +461,7 @@ export function NewsManager({
                     <button
                       className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
                         isActive
-                          ? "bg-slate-950 text-white"
+                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                           : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                       }`}
                       key={option.key}
@@ -477,7 +511,7 @@ export function NewsManager({
                       <span
                         className={`rounded-md px-2.5 py-1 text-xs font-medium ${
                           article.status === "PUBLISHED"
-                            ? "bg-indigo-100 text-indigo-900"
+                            ? "bg-[var(--primary-soft)] text-[var(--primary-strong)]"
                             : "bg-amber-100 text-amber-900"
                         }`}
                       >
@@ -494,9 +528,8 @@ export function NewsManager({
 
                   <div className="flex flex-col items-stretch gap-2 md:items-end">
                     <Link
-                      className="inline-flex justify-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                      className="inline-flex justify-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)]"
                       href={`/editor/newsroom/${article.slug}`}
-                      style={{ color: "#ffffff" }}
                     >
                       编辑
                     </Link>
@@ -534,6 +567,41 @@ export function NewsManager({
           </section>
         </div>
       </div>
+
+      <AlertDialog
+        onOpenChange={(open) => {
+          setConfirmDialogOpen(open);
+          if (!open) {
+            setConfirmDialogState(null);
+          }
+        }}
+        open={confirmDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialogState?.title ?? "确认操作"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialogState?.description ?? "请确认是否继续执行该操作。"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="inline-flex h-9 items-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--foreground)]">
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="inline-flex h-9 items-center rounded-md bg-rose-600 px-3 text-sm font-medium text-white transition hover:bg-rose-700"
+              onClick={() => {
+                const action = confirmDialogState?.onConfirm;
+                setConfirmDialogOpen(false);
+                setConfirmDialogState(null);
+                action?.();
+              }}
+            >
+              {confirmDialogState?.actionLabel ?? "确认"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
