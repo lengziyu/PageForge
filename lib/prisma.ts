@@ -97,10 +97,11 @@ function createPrismaClient(): PrismaClient | null {
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.libsqlAdapter = adapter;
-    globalForPrisma.prisma = prisma;
-  }
+  // Keep a single Prisma client per process in all environments.
+  // Creating multiple clients against the same SQLite file can increase
+  // lock contention and cause operation timeouts under concurrent requests.
+  globalForPrisma.libsqlAdapter = adapter;
+  globalForPrisma.prisma = prisma;
 
   return prisma;
 }

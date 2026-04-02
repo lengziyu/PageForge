@@ -42,6 +42,9 @@ const transientDbErrorPatterns = [
   /sqlit[e]?\_busy/i,
 ] as const;
 
+type LockResolver = () => void;
+let siteTemplateCreationLock: Promise<void> | null = null;
+
 function isTransientDbError(error: unknown) {
   if (!(error instanceof Error)) {
     return false;
@@ -82,6 +85,24 @@ async function createPagesFromTemplateWithRetry(
   return createPagesFromTemplate(templateId, selectedPages, options);
 }
 
+async function withSiteTemplateLock<T>(task: () => Promise<T>) {
+  while (siteTemplateCreationLock) {
+    await siteTemplateCreationLock;
+  }
+
+  let release: LockResolver = () => {};
+  siteTemplateCreationLock = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  try {
+    return await task();
+  } finally {
+    release();
+    siteTemplateCreationLock = null;
+  }
+}
+
 export async function GET() {
   return NextResponse.json(siteTemplateCatalog);
 }
@@ -101,19 +122,23 @@ export async function POST(request: Request) {
     );
   }
 
+  const templateId = parsed.data.templateId;
+
   try {
-    const pages = await createPagesFromTemplateWithRetry(
-      parsed.data.templateId,
-      parsed.data.selectedPages,
-      {
-        replaceExisting: parsed.data.replaceExisting,
-        footerTemplate: parsed.data.footerTemplate,
-      },
+    const pages = await withSiteTemplateLock(() =>
+      createPagesFromTemplateWithRetry(
+        templateId,
+        parsed.data.selectedPages,
+        {
+          replaceExisting: parsed.data.replaceExisting,
+          footerTemplate: parsed.data.footerTemplate,
+        },
+      ),
     );
 
     return NextResponse.json(
       {
-        templateId: parsed.data.templateId,
+        templateId,
         pages,
       },
       {
