@@ -3,6 +3,12 @@ import {
   type EnterprisePageKey,
   type SiteTemplateId,
 } from "@/lib/builder/template-catalog";
+import {
+  resolveSiteFaviconSrc,
+  resolveSiteLogoSrc,
+  resolveSiteName,
+} from "@/lib/brand/identity";
+import { normalizeHeroBannerSources } from "@/lib/builder/banner-media";
 
 export const footerTemplateCatalog = [
   {
@@ -64,6 +70,7 @@ export type SiteConfigInput = {
   tagline?: string;
   logoSrc?: string;
   faviconSrc?: string;
+  heroBannerSources?: string[];
   navigationTemplate?: NavigationTemplateId;
   navigationLinks?: SiteNavigationLink[];
   footer?: Partial<SiteFooterConfig>;
@@ -110,10 +117,14 @@ export function createSiteFooterConfig(
 
 export function createSiteConfig(input: SiteConfigInput) {
   return {
-    name: input.name,
+    name: resolveSiteName(input.name),
     tagline: input.tagline ?? "",
-    logoSrc: input.logoSrc ?? "",
-    faviconSrc: input.faviconSrc ?? input.logoSrc ?? "",
+    logoSrc: resolveSiteLogoSrc(input.logoSrc),
+    faviconSrc: resolveSiteFaviconSrc({
+      faviconSrc: input.faviconSrc,
+      logoSrc: input.logoSrc,
+    }),
+    heroBannerSources: normalizeHeroBannerSources(input.heroBannerSources),
     navigationTemplate: input.navigationTemplate ?? "filled",
     navigationLinks: input.navigationLinks ?? [],
     footer: createSiteFooterConfig(input.footer),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   useBrandTheme,
   type BrandThemePreset,
@@ -48,6 +48,7 @@ export function BrandThemeSwitcher({
   className,
 }: BrandThemeSwitcherProps) {
   const { brand, customColor, setBrand, setCustomColor, themes } = useBrandTheme();
+  const moonMaskId = useId().replace(/:/g, "");
   const [open, setOpen] = useState(false);
   const [hexDraft, setHexDraft] = useState(customColor);
   const isDark = tone === "dark";
@@ -95,12 +96,24 @@ export function BrandThemeSwitcher({
           title="切换主题"
           type="button"
         >
-          <span className="relative inline-flex h-4 w-4 items-center justify-center">
-            <span
-              className="absolute inset-0 rounded-full"
-              style={{ backgroundColor: activeColor }}
+          <svg
+            aria-hidden
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <mask id={moonMaskId}>
+              <rect fill="white" height="24" width="24" x="0" y="0" />
+              <circle cx="16" cy="12" fill="black" r="6" />
+            </mask>
+            <circle
+              cx="12"
+              cy="12"
+              fill={activeColor}
+              mask={`url(#${moonMaskId})`}
+              r="9"
             />
-          </span>
+          </svg>
         </button>
       </PopoverTrigger>
 

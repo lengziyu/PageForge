@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -200,12 +201,24 @@ function readInitialThemeState() {
 }
 
 export function BrandThemeProvider({ children }: { children: ReactNode }) {
-  const [brand, setBrandState] = useState<BrandTheme>(() => readInitialThemeState().brand);
-  const [customColor, setCustomColorState] = useState<string>(
-    () => readInitialThemeState().customColor,
-  );
+  const [brand, setBrandState] = useState<BrandTheme>(defaultThemeState.brand);
+  const [customColor, setCustomColorState] = useState<string>(defaultThemeState.customColor);
+  const hasHydratedRef = useRef(false);
 
   useEffect(() => {
+    const initialThemeState = readInitialThemeState();
+    queueMicrotask(() => {
+      hasHydratedRef.current = true;
+      setBrandState(initialThemeState.brand);
+      setCustomColorState(initialThemeState.customColor);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydratedRef.current) {
+      return;
+    }
+
     const normalizedCustom = normalizeHexColor(customColor);
     applyThemeToDocument(brand, normalizedCustom);
 

@@ -39,8 +39,10 @@ import type {
   BuilderPageResponse,
   BuilderPageStatus,
 } from "@/lib/builder/page-contracts";
+import { normalizeHeroBannerSources } from "@/lib/builder/banner-media";
 import { blockRegistry, type BuilderBlockType } from "@/lib/builder/registry";
 import { pageDocumentSchema, type BuilderPageSection } from "@/lib/builder/schema";
+import { resolveSiteLogoSrc, resolveSiteName } from "@/lib/brand/identity";
 
 type PageEditorProps = {
   initialPage: BuilderPageResponse;
@@ -159,22 +161,16 @@ function CanvasHeaderPreview({
 }) {
   const items = getNavigationItems(page, pages);
   const navigationTemplate = page.document.site.navigationTemplate ?? "filled";
+  const siteName = resolveSiteName(page.document.site.name);
+  const logoSrc = resolveSiteLogoSrc(page.document.site.logoSrc);
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
-          {page.document.site.logoSrc ? (
-            <img
-              alt={page.document.site.name}
-              className="h-10 w-10 rounded-lg object-cover"
-              src={page.document.site.logoSrc}
-            />
-          ) : null}
+          <img alt={siteName} className="h-10 w-10 rounded-lg object-cover" src={logoSrc} />
           <div>
-            <p className="text-base font-semibold text-slate-950">
-              {page.document.site.name}
-            </p>
+            <p className="text-base font-semibold text-slate-950">{siteName}</p>
             <p className="mt-1 text-sm text-slate-500">{page.document.site.tagline}</p>
           </div>
         </div>
@@ -204,13 +200,14 @@ function CanvasFooterPreview({
   site: BuilderPageResponse["document"]["site"];
 }) {
   const footer = site.footer;
+  const siteName = resolveSiteName(site.name);
 
   if (footer.template === "minimal") {
     return (
       <div className="rounded-xl border border-slate-200 bg-[var(--primary-strong)] px-5 py-5 text-[var(--primary-foreground)] shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="font-semibold">{site.name}</p>
+            <p className="font-semibold">{siteName}</p>
             <p className="mt-1 text-sm text-[color-mix(in_srgb,var(--primary-foreground)_72%,transparent)]">
               {footer.companyAddress}
             </p>
@@ -230,7 +227,7 @@ function CanvasFooterPreview({
       <div className="rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-5 py-5 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-base font-semibold text-slate-950">{site.name}</p>
+            <p className="text-base font-semibold text-slate-950">{siteName}</p>
             <p className="mt-2 text-sm text-slate-600">{site.tagline}</p>
           </div>
           <p className="text-sm text-slate-500">{footer.copyrightText}</p>
@@ -255,7 +252,7 @@ function CanvasFooterPreview({
     <div className="rounded-xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
       <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
         <div>
-          <p className="text-base font-semibold text-slate-950">{site.name}</p>
+          <p className="text-base font-semibold text-slate-950">{siteName}</p>
           <p className="mt-3 max-w-lg text-sm leading-7 text-slate-600">{site.tagline}</p>
         </div>
         <div className="grid gap-2 text-sm text-slate-600">
@@ -449,6 +446,19 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
     setDocument((currentDocument) => ({
       ...currentDocument,
       site: nextSite,
+    }));
+  };
+
+  const handleHeroBannerUploaded = (src: string) => {
+    setDocument((currentDocument) => ({
+      ...currentDocument,
+      site: {
+        ...currentDocument.site,
+        heroBannerSources: normalizeHeroBannerSources([
+          ...currentDocument.site.heroBannerSources,
+          src,
+        ]),
+      },
     }));
   };
 
@@ -872,7 +882,12 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                   </div>
                 </div>
                 {inspectorTab === "module" ? (
-                  <BlockInspector onChange={handleUpdateSection} section={selectedSection} />
+                  <BlockInspector
+                    heroBannerSources={document.site.heroBannerSources}
+                    onChange={handleUpdateSection}
+                    onHeroBannerUploaded={handleHeroBannerUploaded}
+                    section={selectedSection}
+                  />
                 ) : (
                   <SiteSettingsPanel
                     onChange={handleSiteChange}

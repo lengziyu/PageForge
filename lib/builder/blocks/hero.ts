@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { HeroBlock } from "@/components/blocks/hero-block";
-import { heroImagePresets } from "@/lib/builder/hero-media";
+import { defaultHeroBannerSources } from "@/lib/builder/banner-media";
 import type { BuilderBlockDefinition } from "@/lib/builder/types";
 
 export const heroPropsSchema = z.object({
@@ -31,7 +31,7 @@ export const heroDefaultProps: HeroBlockProps = {
   primaryCtaHref: "/sites/contact",
   secondaryCtaLabel: "了解方案",
   secondaryCtaHref: "/sites/services-products",
-  backgroundImageSrc: heroImagePresets[0].src,
+  backgroundImageSrc: defaultHeroBannerSources[0],
 };
 
 export const heroBlockDefinition: BuilderBlockDefinition<

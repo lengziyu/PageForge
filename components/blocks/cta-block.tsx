@@ -13,15 +13,20 @@ export function CtaBlock({
           : "bg-[linear-gradient(180deg,#f5f7fc_0%,#eef2f9_100%)]"
       }`}
     >
-      <div className="mx-auto max-w-5xl rounded-xl border border-slate-200 bg-slate-950 px-8 py-12 text-white shadow-[0_18px_40px_rgba(15,23,42,0.08)] md:px-12">
+      <div
+        className="mx-auto max-w-5xl rounded-xl border border-[color-mix(in_srgb,var(--primary)_30%,white)] px-8 py-12 text-[var(--foreground)] shadow-[0_18px_40px_rgba(15,23,42,0.08)] md:px-12"
+        style={{
+          backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)",
+        }}
+      >
         <div className="max-w-3xl space-y-5">
-          <p className="text-sm uppercase tracking-[0.22em] text-indigo-300">
+          <p className="text-sm uppercase tracking-[0.22em] text-[var(--primary-strong)]">
             行动引导
           </p>
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
             {props.title}
           </h2>
-          <p className="text-base leading-8 text-white/72">
+          <p className="text-base leading-8 text-[var(--muted-foreground)]">
             {props.description}
           </p>
           <a

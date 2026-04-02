@@ -1,0 +1,16 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pf-bg" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="pf-mark" x1="72" y1="66" x2="180" y2="196" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DBEAFE"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#pf-bg)"/>
+  <path d="M88 72H148C176.719 72 200 95.2812 200 124C200 152.719 176.719 176 148 176H116V208H88V72Z" fill="url(#pf-mark)"/>
+  <path d="M116 100V148H148C161.255 148 172 137.255 172 124C172 110.745 161.255 100 148 100H116Z" fill="#1E3A8A" fill-opacity="0.4"/>
+  <path d="M72 56L200 56" stroke="#93C5FD" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+</svg>

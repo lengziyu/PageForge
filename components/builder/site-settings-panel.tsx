@@ -11,6 +11,12 @@ import {
 } from "@/lib/builder/site-config";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
 import type { BuilderSiteConfig } from "@/lib/builder/schema";
+import {
+  PAGEFORGE_DEFAULT_SITE_NAME,
+  resolveSiteFaviconSrc,
+  resolveSiteLogoSrc,
+  resolveSiteName,
+} from "@/lib/brand/identity";
 
 type SiteSettingsPanelProps = {
   site: BuilderSiteConfig;
@@ -76,6 +82,12 @@ export function SiteSettingsPanel({
 }: SiteSettingsPanelProps) {
   const [activeTab, setActiveTab] = useState<PublicSettingsTab>("site");
   const orderedNavigationItems = getOrderedNavigationItems(site, sitePages);
+  const siteName = resolveSiteName(site.name);
+  const logoPreviewSrc = resolveSiteLogoSrc(site.logoSrc);
+  const faviconPreviewSrc = resolveSiteFaviconSrc({
+    faviconSrc: site.faviconSrc,
+    logoSrc: site.logoSrc,
+  });
 
   const updateSite = <T extends keyof BuilderSiteConfig>(
     key: T,
@@ -117,7 +129,7 @@ export function SiteSettingsPanel({
         [target]: url,
       };
 
-      if (target === "logoSrc" && !site.faviconSrc) {
+      if (target === "logoSrc") {
         nextSite.faviconSrc = url;
       }
 
@@ -138,6 +150,14 @@ export function SiteSettingsPanel({
     onChange({
       ...site,
       navigationTemplate: template,
+    });
+  };
+
+  const updateLogoAndFavicon = (value: string) => {
+    onChange({
+      ...site,
+      logoSrc: value,
+      faviconSrc: value,
     });
   };
 
@@ -203,8 +223,10 @@ export function SiteSettingsPanel({
             <input
               className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-700"
               onChange={(event) => updateSite("name", event.target.value)}
+              placeholder={PAGEFORGE_DEFAULT_SITE_NAME}
               value={site.name}
             />
+            <p className="text-xs text-slate-500">未设置时默认使用：{PAGEFORGE_DEFAULT_SITE_NAME}</p>
           </label>
 
           <label className="space-y-2">
@@ -221,7 +243,7 @@ export function SiteSettingsPanel({
               <span className="text-sm font-medium text-slate-700">Logo 地址</span>
               <input
                 className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-700"
-                onChange={(event) => updateSite("logoSrc", event.target.value)}
+                onChange={(event) => updateLogoAndFavicon(event.target.value)}
                 value={site.logoSrc}
               />
             </label>
@@ -265,24 +287,16 @@ export function SiteSettingsPanel({
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-medium text-slate-700">Logo 预览</p>
-              {site.logoSrc ? (
-                <img alt={site.name} className="mt-3 h-16 w-16 rounded-lg object-cover" src={site.logoSrc} />
-              ) : (
-                <p className="mt-3 text-sm text-slate-400">暂未设置</p>
-              )}
+              <img alt={siteName} className="mt-3 h-16 w-16 rounded-lg object-cover" src={logoPreviewSrc} />
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-medium text-slate-700">Favicon 预览</p>
-              {site.faviconSrc ? (
-                <img
-                  alt={`${site.name} favicon`}
-                  className="mt-3 h-16 w-16 rounded-lg object-cover"
-                  src={site.faviconSrc}
-                />
-              ) : (
-                <p className="mt-3 text-sm text-slate-400">暂未设置</p>
-              )}
+              <img
+                alt={`${siteName} favicon`}
+                className="mt-3 h-16 w-16 rounded-lg object-cover"
+                src={faviconPreviewSrc}
+              />
             </div>
           </div>
         </div>

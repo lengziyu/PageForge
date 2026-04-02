@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageRenderer } from "@/components/builder/page-renderer";
 import { SiteShell } from "@/components/site/site-shell";
+import { resolveSiteFaviconSrc, resolveSiteName } from "@/lib/brand/identity";
 import {
   getPublishedPageBySlug,
   listPublishedPages,
@@ -25,17 +26,19 @@ export async function generateMetadata({
     return {};
   }
 
-  const icon = page.document.site.faviconSrc || page.document.site.logoSrc || undefined;
+  const siteName = resolveSiteName(page.document.site.name);
+  const icon = resolveSiteFaviconSrc({
+    faviconSrc: page.document.site.faviconSrc,
+    logoSrc: page.document.site.logoSrc,
+  });
 
   return {
-    title: `${page.document.page.title} | ${page.document.site.name}`,
-    icons: icon
-      ? {
-          icon,
-          shortcut: icon,
-          apple: icon,
-        }
-      : undefined,
+    title: `${page.document.page.title} | ${siteName}`,
+    icons: {
+      icon,
+      shortcut: icon,
+      apple: icon,
+    },
   };
 }
 

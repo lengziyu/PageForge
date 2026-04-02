@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { defaultHeroBannerSources } from "@/lib/builder/banner-media";
 import { ctaSectionSchema } from "@/lib/builder/blocks/cta";
 import { companyIntroSectionSchema } from "@/lib/builder/blocks/company-intro";
 import { contactMethodsSectionSchema } from "@/lib/builder/blocks/contact-methods";
@@ -17,6 +18,7 @@ import {
   footerTemplateCatalog,
   navigationTemplateCatalog,
 } from "@/lib/builder/site-config";
+import { PAGEFORGE_DEFAULT_SITE_NAME } from "@/lib/brand/identity";
 
 export const siteNavigationLinkSchema = z.object({
   label: z.string().min(1),
@@ -57,10 +59,11 @@ export const pageSectionSchema = z.discriminatedUnion("type", [
 export const pageDocumentSchema = z.object({
   version: z.literal(1),
   site: z.object({
-    name: z.string().min(1),
+    name: z.string().default(""),
     tagline: z.string().default(""),
     logoSrc: z.string().default(""),
     faviconSrc: z.string().default(""),
+    heroBannerSources: z.array(z.string().min(1)).default(defaultHeroBannerSources),
     navigationTemplate: z
       .enum(
         navigationTemplateCatalog.map((template) => template.id) as [
@@ -70,7 +73,9 @@ export const pageDocumentSchema = z.object({
       )
       .default("filled"),
     navigationLinks: z.array(siteNavigationLinkSchema).default([]),
-    footer: siteFooterSchema.default(createSiteConfig({ name: "PageForge" }).footer),
+    footer: siteFooterSchema.default(
+      createSiteConfig({ name: PAGEFORGE_DEFAULT_SITE_NAME }).footer,
+    ),
   }),
   page: z.object({
     title: z.string().min(1),

@@ -6,6 +6,7 @@ import {
   listPublishedPages,
 } from "@/lib/builder/server/page-service";
 import { SiteShell } from "@/components/site/site-shell";
+import { resolveSiteFaviconSrc, resolveSiteName } from "@/lib/brand/identity";
 import { getPublishedNewsArticleBySlug } from "@/lib/news/server/news-service";
 
 type NewsDetailPageProps = {
@@ -27,17 +28,19 @@ export async function generateMetadata({
     return {};
   }
 
-  const icon = homepage.document.site.faviconSrc || homepage.document.site.logoSrc || undefined;
+  const siteName = resolveSiteName(homepage.document.site.name);
+  const icon = resolveSiteFaviconSrc({
+    faviconSrc: homepage.document.site.faviconSrc,
+    logoSrc: homepage.document.site.logoSrc,
+  });
 
   return {
-    title: `${article.title} | ${homepage.document.site.name}`,
-    icons: icon
-      ? {
-          icon,
-          shortcut: icon,
-          apple: icon,
-        }
-      : undefined,
+    title: `${article.title} | ${siteName}`,
+    icons: {
+      icon,
+      shortcut: icon,
+      apple: icon,
+    },
   };
 }
 

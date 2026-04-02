@@ -2,13 +2,15 @@
 
 import type { ReactNode } from "react";
 import { uploadBrowserFile } from "@/lib/media/client";
+import { buildHeroBannerSelectOptions } from "@/lib/builder/banner-media";
 import type { FeatureIcon } from "@/lib/builder/blocks/feature-list";
-import { heroImagePresets } from "@/lib/builder/hero-media";
 import type { BuilderPageSection } from "@/lib/builder/schema";
 
 type BlockInspectorProps = {
   section: BuilderPageSection | undefined;
   onChange: (sectionId: string, nextSection: BuilderPageSection) => void;
+  heroBannerSources?: string[];
+  onHeroBannerUploaded?: (src: string) => void;
 };
 
 type FieldProps = {
@@ -162,7 +164,12 @@ function AddButton({
   );
 }
 
-export function BlockInspector({ section, onChange }: BlockInspectorProps) {
+export function BlockInspector({
+  section,
+  onChange,
+  heroBannerSources,
+  onHeroBannerUploaded,
+}: BlockInspectorProps) {
   if (!section) {
     return (
       <aside className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-sm leading-7 text-slate-500">
@@ -173,6 +180,10 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
 
   if (section.type === "hero") {
     const props = section.props;
+    const bannerOptions = buildHeroBannerSelectOptions([
+      ...(heroBannerSources ?? []),
+      props.backgroundImageSrc,
+    ]);
 
     return (
       <SectionShell caption="模块属性" title="首屏横幅">
@@ -206,10 +217,7 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
               replaceSectionProps(section, { ...props, backgroundImageSrc: value }),
             )
           }
-          options={heroImagePresets.map((item) => ({
-            value: item.src,
-            label: item.label,
-          }))}
+          options={bannerOptions}
           value={props.backgroundImageSrc}
         />
         <label className="space-y-2">
@@ -230,6 +238,7 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
                   section.id,
                   replaceSectionProps(section, { ...props, backgroundImageSrc: url }),
                 );
+                onHeroBannerUploaded?.(url);
               } catch (error) {
                 console.error("Failed to upload block asset", error);
               }

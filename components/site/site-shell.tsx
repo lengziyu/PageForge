@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
 import type { BuilderPageDocument } from "@/lib/builder/schema";
+import { resolveSiteLogoSrc, resolveSiteName } from "@/lib/brand/identity";
 
 type SiteShellProps = {
   activeSlug: string;
@@ -69,12 +70,13 @@ function getNavigationItemClass(
 
 function FooterClassic({ document }: { document: BuilderPageDocument }) {
   const footer = document.site.footer;
+  const siteName = resolveSiteName(document.site.name);
 
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[1.2fr_1fr]">
         <div>
-          <p className="text-lg font-semibold text-slate-950">{document.site.name}</p>
+          <p className="text-lg font-semibold text-slate-950">{siteName}</p>
           <p className="mt-3 max-w-lg text-sm leading-7 text-slate-600">
             {document.site.tagline || "以模块化方式搭建更清晰、更可信的企业官网。"}
           </p>
@@ -93,13 +95,14 @@ function FooterClassic({ document }: { document: BuilderPageDocument }) {
 
 function FooterStacked({ document }: { document: BuilderPageDocument }) {
   const footer = document.site.footer;
+  const siteName = resolveSiteName(document.site.name);
 
   return (
     <footer className="border-t border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)]">
       <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-lg font-semibold text-slate-950">{document.site.name}</p>
+            <p className="text-lg font-semibold text-slate-950">{siteName}</p>
             <p className="mt-2 text-sm text-slate-600">
               {document.site.tagline || "为企业提供清晰的官网表达与长期内容沉淀。"}
             </p>
@@ -131,12 +134,13 @@ function FooterStacked({ document }: { document: BuilderPageDocument }) {
 
 function FooterMinimal({ document }: { document: BuilderPageDocument }) {
   const footer = document.site.footer;
+  const siteName = resolveSiteName(document.site.name);
 
   return (
     <footer className="border-t border-slate-200 bg-[var(--primary-strong)] text-[var(--primary-foreground)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="font-semibold">{document.site.name}</p>
+          <p className="font-semibold">{siteName}</p>
           <p className="mt-1 text-sm text-[color-mix(in_srgb,var(--primary-foreground)_72%,transparent)]">
             {footer.companyAddress}
           </p>
@@ -171,26 +175,26 @@ export function SiteShell({
 }: SiteShellProps) {
   const navigationItems = buildNavigationItems(document, pages);
   const navigationTemplate = document.site.navigationTemplate ?? "filled";
+  const siteName = resolveSiteName(document.site.name);
+  const logoSrc = resolveSiteLogoSrc(document.site.logoSrc);
 
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            {document.site.logoSrc ? (
-              <img
-                alt={document.site.name}
-                className="h-11 w-11 rounded-lg object-cover"
-                src={document.site.logoSrc}
-              />
-            ) : null}
+            <img
+              alt={siteName}
+              className="h-11 w-11 rounded-lg object-cover"
+              src={logoSrc}
+            />
             <div>
               <Link
                 className="text-lg font-semibold text-slate-950"
                 href="/sites/homepage"
                 style={{ color: "#020617" }}
               >
-                {document.site.name}
+                {siteName}
               </Link>
               <p className="mt-1 text-sm text-slate-500">{document.site.tagline}</p>
             </div>

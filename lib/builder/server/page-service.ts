@@ -16,6 +16,7 @@ import type {
 import { enterprisePageCatalog } from "@/lib/builder/template-catalog";
 import { buildSiteTemplateDocuments } from "@/lib/builder/template-library";
 import type { FooterTemplateId } from "@/lib/builder/site-config";
+import { resolveSiteName } from "@/lib/brand/identity";
 import { replaceDemoNewsArticles } from "@/lib/news/server/news-service";
 import { replaceDemoProducts } from "@/lib/products/server/product-service";
 import { ensureAppDatabaseSchema, getPrismaClient } from "@/lib/prisma";
@@ -353,12 +354,13 @@ export async function createPagesFromTemplate(
     const recreatedPages = transactionResults.slice(1) as PageRecord[];
 
     const pages: BuilderPageResponse[] = sortPageList(recreatedPages).map(mapPageRecord);
+    const siteName = resolveSiteName(pages[0]?.document.site.name);
     await seedDemoNewsSafely({
-      siteName: pages[0]?.document.site.name ?? "企业站点",
+      siteName,
       keyword: templateId,
     });
     await seedDemoProductsSafely({
-      siteName: pages[0]?.document.site.name ?? "企业站点",
+      siteName,
       keyword: templateId,
     });
 
@@ -391,12 +393,13 @@ export async function createPagesFromTemplate(
   );
 
   const pages: BuilderPageResponse[] = sortPageList(createdPages).map(mapPageRecord);
+  const siteName = resolveSiteName(pages[0]?.document.site.name);
   await seedDemoNewsSafely({
-    siteName: pages[0]?.document.site.name ?? "企业站点",
+    siteName,
     keyword: templateId,
   });
   await seedDemoProductsSafely({
-    siteName: pages[0]?.document.site.name ?? "企业站点",
+    siteName,
     keyword: templateId,
   });
 

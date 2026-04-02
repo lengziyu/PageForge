@@ -536,7 +536,7 @@ const templateMap: Record<SiteTemplateId, TemplateConfig> = {
     },
   },
   "corporate-services": {
-    siteName: "山合咨询",
+    siteName: "冷子雨科技有限公司",
     siteTagline: "更适合咨询与企业服务行业的稳健型官网",
     logoSrc: "/brand/shanhe-logo.svg",
     keyword: "企业服务",

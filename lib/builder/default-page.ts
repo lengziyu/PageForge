@@ -3,12 +3,13 @@ import { featureListDefaultProps } from "@/lib/builder/blocks/feature-list";
 import { heroDefaultProps } from "@/lib/builder/blocks/hero";
 import { statsStripDefaultProps } from "@/lib/builder/blocks/stats-strip";
 import { createSiteConfig } from "@/lib/builder/site-config";
+import { PAGEFORGE_DEFAULT_SITE_NAME } from "@/lib/brand/identity";
 import { pageDocumentSchema, type BuilderPageDocument } from "@/lib/builder/schema";
 
 export const defaultPageDocument: BuilderPageDocument = pageDocumentSchema.parse({
   version: 1,
   site: createSiteConfig({
-    name: "PageForge",
+    name: PAGEFORGE_DEFAULT_SITE_NAME,
     tagline: "模块化企业官网搭建器",
     navigationLinks: [
       {
