@@ -43,7 +43,20 @@ docker compose ps "${SERVICE_NAME}"
 
 echo "[6/9] Local health check"
 if [[ -n "${HOST_PORT}" ]]; then
-  curl -fsSIL "http://127.0.0.1:${HOST_PORT}" >/dev/null
+  READY=0
+  for i in {1..30}; do
+    if curl -fsSIL "http://127.0.0.1:${HOST_PORT}" >/dev/null 2>&1; then
+      READY=1
+      break
+    fi
+    sleep 1
+  done
+
+  if [[ "${READY}" -ne 1 ]]; then
+    echo "Local health check failed after waiting 30s: http://127.0.0.1:${HOST_PORT}"
+    docker compose logs --tail=120 "${SERVICE_NAME}" || true
+    exit 1
+  fi
 fi
 
 echo "[7/9] Test nginx config"
