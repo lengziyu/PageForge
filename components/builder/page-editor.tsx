@@ -574,7 +574,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
         editorHref={sitePages.some((page) => page.source === "database") ? "/editor" : "/editor/start"}
         pageSlug={initialPage.slug}
       />
-      <div className="mx-auto max-w-[1580px] space-y-3">
+      <div className="w-full space-y-3">
         <header className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-3 shadow-sm md:px-4">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2.5 xl:flex-row xl:items-start xl:justify-between">

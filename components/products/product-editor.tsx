@@ -142,15 +142,15 @@ export function ProductEditor({
         ) : null}
 
         <div className={embedded ? "min-h-0 flex-1 overflow-y-auto space-y-6 pr-1" : "space-y-6"}>
-          <div className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
-            <aside className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="space-y-6">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">基础信息</p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">产品属性</h2>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-2">
+              <div className="mt-4 grid gap-4 md:grid-cols-12">
+                <label className="space-y-2 md:col-span-8">
                   <span className="text-sm font-medium text-slate-700">标题</span>
                   <input
                     className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)]"
@@ -159,7 +159,7 @@ export function ProductEditor({
                   />
                 </label>
 
-                <label className="space-y-2">
+                <label className="space-y-2 md:col-span-4">
                   <span className="text-sm font-medium text-slate-700">分类</span>
                   <select
                     className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)]"
@@ -173,46 +173,49 @@ export function ProductEditor({
                     ))}
                   </select>
                 </label>
+
+                <label className="space-y-2 md:col-span-8">
+                  <span className="text-sm font-medium text-slate-700">摘要</span>
+                  <textarea
+                    className="min-h-[11.5rem] w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)]"
+                    onChange={(event) => updateProduct("summary", event.target.value)}
+                    value={product.summary}
+                  />
+                </label>
+
+                <div className="space-y-2 md:col-span-4">
+                  <span className="text-sm font-medium text-slate-700">封面预览</span>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <img
+                      alt={product.title}
+                      className="h-[11.5rem] w-full rounded-lg object-cover"
+                      src={product.coverImage}
+                    />
+                  </div>
+                </div>
+
+                <label className="space-y-2 md:col-span-8">
+                  <span className="text-sm font-medium text-slate-700">封面图地址</span>
+                  <input
+                    className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)]"
+                    onChange={(event) => updateProduct("coverImage", event.target.value)}
+                    value={product.coverImage}
+                  />
+                </label>
+
+                <label className="space-y-2 md:col-span-4">
+                  <span className="text-sm font-medium text-slate-700">上传封面图</span>
+                  <input
+                    accept="image/*"
+                    className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-[var(--primary-foreground)]"
+                    onChange={(event) => {
+                      void handleCoverUpload(event.target.files);
+                    }}
+                    type="file"
+                  />
+                </label>
               </div>
-
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">摘要</span>
-                <textarea
-                  className="min-h-28 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)]"
-                  onChange={(event) => updateProduct("summary", event.target.value)}
-                  value={product.summary}
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">封面图地址</span>
-                <input
-                  className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[var(--ring)]"
-                  onChange={(event) => updateProduct("coverImage", event.target.value)}
-                  value={product.coverImage}
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">上传封面图</span>
-                <input
-                  accept="image/*"
-                  className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-[var(--primary-foreground)]"
-                  onChange={(event) => {
-                    void handleCoverUpload(event.target.files);
-                  }}
-                  type="file"
-                />
-              </label>
-
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <img
-                  alt={product.title}
-                  className="mx-auto h-40 w-full max-w-[220px] rounded-lg object-cover"
-                  src={product.coverImage}
-                />
-              </div>
-            </aside>
+            </section>
 
             <div className="space-y-6">
               <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
