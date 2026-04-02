@@ -3,7 +3,12 @@
 
 import { useState } from "react";
 import { uploadBrowserFile } from "@/lib/media/client";
-import { footerTemplateCatalog, type FooterTemplateId } from "@/lib/builder/site-config";
+import {
+  footerTemplateCatalog,
+  navigationTemplateCatalog,
+  type FooterTemplateId,
+  type NavigationTemplateId,
+} from "@/lib/builder/site-config";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
 import type { BuilderSiteConfig } from "@/lib/builder/schema";
 
@@ -126,6 +131,13 @@ export function SiteSettingsPanel({
     onChange({
       ...site,
       navigationLinks: nextLinks,
+    });
+  };
+
+  const updateNavigationTemplate = (template: NavigationTemplateId) => {
+    onChange({
+      ...site,
+      navigationTemplate: template,
     });
   };
 
@@ -278,6 +290,34 @@ export function SiteSettingsPanel({
 
       {activeTab === "navigation" ? (
         <div className="space-y-3">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <p className="text-sm font-semibold text-slate-900">导航样式</p>
+            <p className="mt-1 text-xs text-slate-500">用于编辑页顶部导航和前台站点顶部导航。</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              {navigationTemplateCatalog.map((template) => {
+                const isActive = site.navigationTemplate === template.id;
+
+                return (
+                  <button
+                    className={`rounded-lg border px-3 py-2 text-left transition ${
+                      isActive
+                        ? "border-indigo-500 bg-indigo-50"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                    key={template.id}
+                    onClick={() => updateNavigationTemplate(template.id)}
+                    type="button"
+                  >
+                    <p className="text-xs font-semibold text-slate-900">{template.name}</p>
+                    <p className="mt-1 text-[11px] leading-5 text-slate-500">
+                      {template.description}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {orderedNavigationItems.map((item) => {
             const visibleIndex = site.navigationLinks.findIndex((link) => link.slug === item.slug);
             const isVisible = visibleIndex >= 0;

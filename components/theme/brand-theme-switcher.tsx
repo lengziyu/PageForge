@@ -21,15 +21,15 @@ const presetThemeMeta: Record<
     color: "#2563eb",
     description: "稳重专业，企业官网默认风格",
   },
+  violet: {
+    label: "紫色",
+    color: "#7c3aed",
+    description: "更有科技感，适合强调品牌与产品调性",
+  },
   emerald: {
     label: "翡翠绿",
     color: "#059669",
     description: "科技感+生态感，适合解决方案展示",
-  },
-  amber: {
-    label: "琥珀橙",
-    color: "#d97706",
-    description: "品牌强调更强，适合增长和营销页面",
   },
   rose: {
     label: "玫瑰红",
@@ -65,7 +65,7 @@ export function BrandThemeSwitcher({
   }, [brand, customColor]);
 
   const triggerClassName = cn(
-    "inline-flex h-8 w-8 items-center justify-center rounded-md border transition",
+    "inline-flex h-9 w-9 items-center justify-center rounded-md border transition",
     isDark
       ? "border-white/15 bg-white/5 text-white hover:bg-white/10"
       : "border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]",
@@ -97,10 +97,9 @@ export function BrandThemeSwitcher({
         >
           <span className="relative inline-flex h-4 w-4 items-center justify-center">
             <span
-              className="absolute inset-0 rounded-full border border-black/10"
+              className="absolute inset-0 rounded-full"
               style={{ backgroundColor: activeColor }}
             />
-            <span className="absolute inset-[3px] rounded-full border border-white/70" />
           </span>
         </button>
       </PopoverTrigger>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
+import { EditorFlowNav } from "@/components/builder/editor-flow-nav";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
 import {
   AlertDialog,
@@ -43,6 +44,7 @@ type ContentHubProps = {
   initialNewsArticles: SiteNewsSummary[];
   productCategories: SiteProductCategory[];
   newsCategories: SiteNewsCategory[];
+  editorHref?: string;
 };
 
 type HubSection =
@@ -108,6 +110,7 @@ export function ContentHub({
   initialNewsArticles,
   productCategories,
   newsCategories,
+  editorHref = "/editor",
 }: ContentHubProps) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
@@ -682,7 +685,8 @@ export function ContentHub({
     categoryDialogKind === "products" ? "产品分类" : "资讯分类";
 
   return (
-    <main className="min-h-screen bg-[var(--background)] lg:h-screen lg:overflow-hidden">
+    <main className="editor-radius-half min-h-screen bg-[var(--background)] lg:h-screen lg:overflow-hidden">
+      <EditorFlowNav activeStep="content" editorHref={editorHref} />
       <div className="grid min-h-screen lg:h-full lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="border-b border-[var(--border)] bg-[var(--card)] px-3 py-4 lg:h-full lg:overflow-hidden lg:border-b-0 lg:border-r">
           <div className="flex h-full flex-col">
@@ -779,18 +783,6 @@ export function ContentHub({
             </div>
 
             <div className="mt-4 grid gap-2 lg:mt-auto">
-              <Link
-                className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-                href="/editor"
-              >
-                页面中心
-              </Link>
-              <Link
-                className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-                href="/editor/pages/homepage"
-              >
-                首页编辑
-              </Link>
               <div className="flex items-center justify-between rounded-md border border-[var(--border)] bg-[var(--card)] px-2 py-1.5">
                 <span className="text-xs text-[var(--muted-foreground)]">主题</span>
                 <BrandThemeSwitcher />

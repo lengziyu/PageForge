@@ -273,7 +273,7 @@ export function NewsManager({
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-                内容中心
+                内容管理
               </p>
               <h1 className="mt-3 text-3xl font-semibold text-[var(--foreground)]">新闻中心</h1>
               <p className="mt-3 text-sm text-[var(--muted-foreground)]">{message}</p>
@@ -284,12 +284,6 @@ export function NewsManager({
                 href="/editor"
               >
                 返回页面管理
-              </Link>
-              <Link
-                className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-                href="/editor/content"
-              >
-                内容中心
               </Link>
               <BrandThemeSwitcher />
               <AdminLogoutButton className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]" />

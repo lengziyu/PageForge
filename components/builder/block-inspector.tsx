@@ -198,46 +198,6 @@ export function BlockInspector({ section, onChange }: BlockInspectorProps) {
           }
           value={props.description}
         />
-        <Field
-          label="主按钮文案"
-          onChange={(value) =>
-            onChange(
-              section.id,
-              replaceSectionProps(section, { ...props, primaryCtaLabel: value }),
-            )
-          }
-          value={props.primaryCtaLabel}
-        />
-        <Field
-          label="主按钮链接"
-          onChange={(value) =>
-            onChange(
-              section.id,
-              replaceSectionProps(section, { ...props, primaryCtaHref: value }),
-            )
-          }
-          value={props.primaryCtaHref}
-        />
-        <Field
-          label="次按钮文案"
-          onChange={(value) =>
-            onChange(
-              section.id,
-              replaceSectionProps(section, { ...props, secondaryCtaLabel: value }),
-            )
-          }
-          value={props.secondaryCtaLabel}
-        />
-        <Field
-          label="次按钮链接"
-          onChange={(value) =>
-            onChange(
-              section.id,
-              replaceSectionProps(section, { ...props, secondaryCtaHref: value }),
-            )
-          }
-          value={props.secondaryCtaHref}
-        />
         <SelectField
           label="背景图预设"
           onChange={(value) =>

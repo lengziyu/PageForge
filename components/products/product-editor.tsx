@@ -134,12 +134,6 @@ export function ProductEditor({
                 >
                   返回产品中心
                 </Link>
-                <Link
-                  className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-                  href="/editor/content"
-                >
-                  内容中心
-                </Link>
                 <BrandThemeSwitcher />
                 <AdminLogoutButton className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]" />
               </div>

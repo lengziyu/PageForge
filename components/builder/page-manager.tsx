@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
+import { EditorFlowNav } from "@/components/builder/editor-flow-nav";
 import { SitePageDashboard } from "@/components/builder/site-page-dashboard";
 import { SiteTemplateStarter } from "@/components/builder/site-template-starter";
+import { SiteTemplateDialog } from "@/components/builder/site-template-dialog";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +62,7 @@ export function PageManager({ initialPages }: PageManagerProps) {
   const sortedPages = initialPages;
 
   const hasDatabasePages = sortedPages.some((page) => page.source === "database");
+  const editorStepHref = hasDatabasePages ? "/editor" : "/editor/start";
 
   const handleCreateSite = (input: {
     templateId: SiteTemplateId;
@@ -207,11 +210,12 @@ export function PageManager({ initialPages }: PageManagerProps) {
   };
 
   return (
-    <main className="min-h-screen px-4 py-5 md:px-6">
+    <main className="editor-radius-half min-h-screen px-4 py-5 md:px-6">
+      <EditorFlowNav activeStep="editor" editorHref={editorStepHref} />
       <div className="mx-auto max-w-7xl space-y-5">
-        <header className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 shadow-sm">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2.5">
+        <header className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 shadow-sm">
+          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                 企业官网建站器
               </p>
@@ -219,7 +223,7 @@ export function PageManager({ initialPages }: PageManagerProps) {
                 <h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
                   {hasDatabasePages ? "页面管理" : "选择行业模板"}
                 </h1>
-                <p className="mt-1.5 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
                   {hasDatabasePages
                     ? "当前站点已经初始化完成。你可以继续新建页面，也可以重新选择行业模板覆盖当前站点。"
                     : "先选行业模板并生成标准页面，再进入拖拽编辑器逐页修改。"}
@@ -227,12 +231,28 @@ export function PageManager({ initialPages }: PageManagerProps) {
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-2 lg:items-end">
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)] px-3 py-1.5 text-[11px] text-[var(--muted-foreground)] md:text-xs">
+            <div className="flex flex-col items-start gap-1.5 lg:items-end">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1 text-[11px] text-[var(--muted-foreground)] md:text-xs">
                 {message}
               </div>
-              <BrandThemeSwitcher />
-              <AdminLogoutButton className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]" />
+              <div className="flex flex-wrap items-center gap-1.5">
+                {hasDatabasePages ? (
+                  <>
+                    <Button
+                      disabled={isSubmitting}
+                      onClick={handlePublishSite}
+                      size="default"
+                      type="button"
+                      variant="default"
+                    >
+                      发布整站
+                    </Button>
+                    <SiteTemplateDialog isSubmitting={isSubmitting} onReplaceSite={handleReplaceSite} />
+                  </>
+                ) : null}
+                <BrandThemeSwitcher className="h-9 w-9" />
+                <AdminLogoutButton size="default" variant="outline" />
+              </div>
             </div>
           </div>
         </header>
@@ -241,8 +261,6 @@ export function PageManager({ initialPages }: PageManagerProps) {
           <SitePageDashboard
             isSubmitting={isSubmitting}
             onDelete={handleDeletePage}
-            onPublishSite={handlePublishSite}
-            onReplaceSite={handleReplaceSite}
             onSlugChange={setSlug}
             onSubmit={handleSinglePageSubmit}
             onTitleChange={setTitle}
@@ -258,14 +276,6 @@ export function PageManager({ initialPages }: PageManagerProps) {
           />
         )}
 
-        <div className="flex justify-start">
-          <Link
-            className="inline-flex rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 md:text-sm"
-            href="/"
-          >
-            返回首页
-          </Link>
-        </div>
       </div>
 
       <AlertDialog

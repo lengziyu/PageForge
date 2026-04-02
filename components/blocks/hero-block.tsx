@@ -34,21 +34,6 @@ export function HeroBlock({
             {props.title}
           </h1>
           <p className="mt-5 text-lg leading-8 text-slate-600">{props.description}</p>
-
-          <div className="mt-8 flex flex-wrap gap-4">
-            <a
-              className="inline-flex rounded-lg bg-[linear-gradient(135deg,#2531a5_0%,#5b4df5_50%,#6b6cff_100%)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(62,73,196,0.24)] transition hover:-translate-y-0.5"
-              href={props.primaryCtaHref}
-            >
-              {props.primaryCtaLabel}
-            </a>
-            <a
-              className="inline-flex rounded-lg border border-slate-200 bg-white/90 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white"
-              href={props.secondaryCtaHref}
-            >
-              {props.secondaryCtaLabel}
-            </a>
-          </div>
         </div>
       </div>
     </section>

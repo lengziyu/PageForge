@@ -1,7 +1,12 @@
 export const heroImagePresets = [
   {
+    id: "homepage-minimal",
+    label: "首页简洁",
+    src: "/hero/homepage-minimal.svg",
+  },
+  {
     id: "homepage-overview",
-    label: "首页总览",
+    label: "首页总览（丰富）",
     src: "/hero/homepage-overview.svg",
   },
   {

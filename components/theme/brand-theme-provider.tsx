@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-export type BrandThemePreset = "blue" | "emerald" | "amber" | "rose";
+export type BrandThemePreset = "blue" | "violet" | "emerald" | "rose";
 export type BrandTheme = BrandThemePreset | "custom";
 
 const storageKey = "pageforge.brand-theme";
@@ -21,8 +21,8 @@ const defaultThemeState = {
 
 const availableThemes: ReadonlyArray<BrandThemePreset> = [
   "blue",
+  "violet",
   "emerald",
-  "amber",
   "rose",
 ];
 

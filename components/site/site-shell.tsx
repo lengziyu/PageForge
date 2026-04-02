@@ -32,6 +32,41 @@ function buildNavigationItems(
   }));
 }
 
+function getNavigationContainerClass(
+  template: BuilderPageDocument["site"]["navigationTemplate"],
+) {
+  switch (template) {
+    case "underline":
+      return "flex flex-wrap items-center gap-x-5 gap-y-2";
+    case "outline":
+      return "flex flex-wrap items-center gap-2";
+    case "filled":
+    default:
+      return "flex flex-wrap gap-2";
+  }
+}
+
+function getNavigationItemClass(
+  template: BuilderPageDocument["site"]["navigationTemplate"],
+  isActive: boolean,
+) {
+  switch (template) {
+    case "underline":
+      return isActive
+        ? "relative px-1 py-2 text-sm font-semibold text-[var(--primary)] after:absolute after:-bottom-0.5 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-[var(--primary)]"
+        : "relative px-1 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900";
+    case "outline":
+      return isActive
+        ? "rounded-lg border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900"
+        : "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50";
+    case "filled":
+    default:
+      return isActive
+        ? "rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)]"
+        : "rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100";
+  }
+}
+
 function FooterClassic({ document }: { document: BuilderPageDocument }) {
   const footer = document.site.footer;
 
@@ -135,6 +170,7 @@ export function SiteShell({
   children,
 }: SiteShellProps) {
   const navigationItems = buildNavigationItems(document, pages);
+  const navigationTemplate = document.site.navigationTemplate ?? "filled";
 
   return (
     <div className="min-h-screen bg-white">
@@ -161,17 +197,13 @@ export function SiteShell({
           </div>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <nav className="flex flex-wrap gap-2">
+            <nav className={getNavigationContainerClass(navigationTemplate)}>
               {navigationItems.map((item) => {
                 const isActive = item.slug === activeSlug;
 
                 return (
                   <Link
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                      isActive
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                        : "text-slate-700 hover:bg-slate-100"
-                    }`}
+                    className={getNavigationItemClass(navigationTemplate, isActive)}
                     href={item.href}
                     key={item.slug}
                   >

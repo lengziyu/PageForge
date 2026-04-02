@@ -501,7 +501,7 @@ const templateMap: Record<SiteTemplateId, TemplateConfig> = {
     address: "上海市浦东新区星海路 16 号",
     registrationNumber: "沪ICP备2026011024号",
     heroImages: {
-      homepage: "/hero/homepage-overview.svg",
+      homepage: "/hero/homepage-minimal.svg",
       "services-products": "/hero/services-grid.svg",
       "technology-rd": "/hero/technology-platform.svg",
       news: "/hero/news-media-wall.svg",
@@ -545,7 +545,7 @@ const templateMap: Record<SiteTemplateId, TemplateConfig> = {
     address: "北京市朝阳区望京企业大道 26 号",
     registrationNumber: "京ICP备2026026000号",
     heroImages: {
-      homepage: "/hero/homepage-overview.svg",
+      homepage: "/hero/homepage-minimal.svg",
       "services-products": "/hero/services-grid.svg",
       "technology-rd": "/hero/technology-platform.svg",
       news: "/hero/news-media-wall.svg",
@@ -589,7 +589,7 @@ const templateMap: Record<SiteTemplateId, TemplateConfig> = {
     address: "苏州市工业园区智造大道 80 号",
     registrationNumber: "苏ICP备2026018300号",
     heroImages: {
-      homepage: "/hero/homepage-overview.svg",
+      homepage: "/hero/homepage-minimal.svg",
       "services-products": "/hero/services-grid.svg",
       "technology-rd": "/hero/technology-platform.svg",
       news: "/hero/news-media-wall.svg",
@@ -633,7 +633,7 @@ const templateMap: Record<SiteTemplateId, TemplateConfig> = {
     address: "深圳市南山区创新科技路 24 号",
     registrationNumber: "粤ICP备2026024070号",
     heroImages: {
-      homepage: "/hero/homepage-overview.svg",
+      homepage: "/hero/homepage-minimal.svg",
       "services-products": "/hero/services-grid.svg",
       "technology-rd": "/hero/technology-platform.svg",
       news: "/hero/news-media-wall.svg",

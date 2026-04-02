@@ -24,11 +24,15 @@ type TemplateSelectionPanelProps = {
 };
 
 export function getDefaultSelectedPages(templateId: SiteTemplateId): EnterprisePageKey[] {
+  const defaults = [...defaultSelectedEnterprisePages];
+
   if (templateId === "research-lab") {
-    return [...defaultSelectedEnterprisePages, "technology-rd"];
+    return defaults.includes("technology-rd")
+      ? defaults
+      : [...defaults, "technology-rd"];
   }
 
-  return [...defaultSelectedEnterprisePages];
+  return defaults.filter((pageKey) => pageKey !== "technology-rd");
 }
 
 export function getDefaultFooterTemplateBySite(templateId: SiteTemplateId) {

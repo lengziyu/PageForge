@@ -28,10 +28,12 @@ import {
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { BlockInspector } from "@/components/builder/block-inspector";
 import { BlockPalette } from "@/components/builder/block-palette";
+import { EditorFlowNav } from "@/components/builder/editor-flow-nav";
 import { SitePageNav } from "@/components/builder/site-page-nav";
 import { SiteSettingsPanel } from "@/components/builder/site-settings-panel";
 import { SortableSectionCard } from "@/components/builder/sortable-section-card";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
+import { Button } from "@/components/ui/button";
 import type {
   BuilderPageListItem,
   BuilderPageResponse,
@@ -113,6 +115,41 @@ function getNavigationItems(
   }));
 }
 
+function getCanvasNavigationContainerClass(
+  template: BuilderPageResponse["document"]["site"]["navigationTemplate"],
+) {
+  switch (template) {
+    case "underline":
+      return "flex flex-wrap items-center gap-x-5 gap-y-2";
+    case "outline":
+      return "flex flex-wrap items-center gap-2";
+    case "filled":
+    default:
+      return "flex flex-wrap gap-2";
+  }
+}
+
+function getCanvasNavigationItemClass(
+  template: BuilderPageResponse["document"]["site"]["navigationTemplate"],
+  isActive: boolean,
+) {
+  switch (template) {
+    case "underline":
+      return isActive
+        ? "relative px-1 py-2 text-sm font-semibold text-[var(--primary)] after:absolute after:-bottom-0.5 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-[var(--primary)]"
+        : "relative px-1 py-2 text-sm font-medium text-slate-600";
+    case "outline":
+      return isActive
+        ? "rounded-lg border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900"
+        : "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600";
+    case "filled":
+    default:
+      return isActive
+        ? "rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)]"
+        : "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600";
+  }
+}
+
 function CanvasHeaderPreview({
   page,
   pages,
@@ -121,6 +158,7 @@ function CanvasHeaderPreview({
   pages: BuilderPageListItem[];
 }) {
   const items = getNavigationItems(page, pages);
+  const navigationTemplate = page.document.site.navigationTemplate ?? "filled";
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -141,17 +179,13 @@ function CanvasHeaderPreview({
           </div>
         </div>
 
-        <nav className="flex flex-wrap gap-2">
+        <nav className={getCanvasNavigationContainerClass(navigationTemplate)}>
           {items.map((item) => {
             const isActive = item.slug === page.slug;
 
             return (
               <span
-                className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                  isActive
-                    ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                    : "border border-slate-200 bg-white text-slate-600"
-                }`}
+                className={getCanvasNavigationItemClass(navigationTemplate, isActive)}
                 key={item.slug}
               >
                 {item.label}
@@ -244,6 +278,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
     initialPage.document.sections[0]?.id ?? null,
   );
   const [collapsedSectionIds, setCollapsedSectionIds] = useState<string[]>([]);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>("module");
   const [leftPanelTab, setLeftPanelTab] = useState<LeftPanelTab>("structure");
@@ -323,7 +358,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
       window.cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
     };
-  }, [canUseZoom, isInspectorOpen, document.sections.length]);
+  }, [canUseZoom, isLeftPanelOpen, isInspectorOpen, document.sections.length]);
 
   const canvasPage: BuilderPageResponse = {
     ...initialPage,
@@ -522,20 +557,23 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
     });
   };
 
-  const gridClassName = isInspectorOpen
-    ? "grid gap-3 xl:grid-cols-[288px_minmax(0,1fr)_350px]"
-    : "grid gap-3 xl:grid-cols-[288px_minmax(0,1fr)_54px]";
-  const compactGhostButtonClass =
-    "inline-flex items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)] md:text-xs";
-  const compactPrimaryButtonClass =
-    "inline-flex items-center justify-center rounded-md bg-[var(--primary)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-60 md:text-xs";
-  const compactWarningButtonClass =
-    "inline-flex items-center justify-center rounded-md border border-[var(--warning-border)] bg-[var(--warning-bg)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--warning-foreground)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60 md:text-xs";
+  const gridClassName = isLeftPanelOpen
+    ? isInspectorOpen
+      ? "grid gap-3 xl:grid-cols-[288px_minmax(0,1fr)_350px]"
+      : "grid gap-3 xl:grid-cols-[288px_minmax(0,1fr)_54px]"
+    : isInspectorOpen
+      ? "grid gap-3 xl:grid-cols-[54px_minmax(0,1fr)_350px]"
+      : "grid gap-3 xl:grid-cols-[54px_minmax(0,1fr)_54px]";
   const compactTabButtonClass =
     "rounded-md px-2.5 py-1.5 text-xs font-medium transition";
 
   return (
-    <main className="min-h-screen px-3 py-3 md:px-4">
+    <main className="editor-radius-half min-h-screen px-3 py-3 md:px-4">
+      <EditorFlowNav
+        activeStep="page-editor"
+        editorHref={sitePages.some((page) => page.source === "database") ? "/editor" : "/editor/start"}
+        pageSlug={initialPage.slug}
+      />
       <div className="mx-auto max-w-[1580px] space-y-3">
         <header className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-3 shadow-sm md:px-4">
           <div className="flex flex-col gap-3">
@@ -559,39 +597,35 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
-                <Link className={compactGhostButtonClass} href="/editor">
-                  页面中心
-                </Link>
-                <Link className={compactGhostButtonClass} href="/editor/content">
-                  内容中心
-                </Link>
-                <BrandThemeSwitcher />
+                <BrandThemeSwitcher className="h-9 w-9" />
                 {pageStatus === "PUBLISHED" ? (
-                  <Link className={compactGhostButtonClass} href={`/sites/${initialPage.slug}`}>
-                    预览
-                  </Link>
+                  <Button asChild size="default" variant="outline">
+                    <Link href={`/sites/${initialPage.slug}`}>预览</Link>
+                  </Button>
                 ) : (
-                  <span className="inline-flex items-center justify-center rounded-md border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--muted-foreground)] md:text-xs">
+                  <Button disabled size="default" variant="outline">
                     未发布
-                  </span>
+                  </Button>
                 )}
-                <button
-                  className={compactWarningButtonClass}
+                <Button
                   disabled={isSaving}
                   onClick={handleSaveDraft}
+                  size="default"
                   type="button"
+                  variant="warning"
                 >
                   {isSaving ? "处理中" : "存草稿"}
-                </button>
-                <button
-                  className={compactPrimaryButtonClass}
+                </Button>
+                <Button
                   disabled={isSaving}
                   onClick={handlePublishSite}
+                  size="default"
                   type="button"
+                  variant="default"
                 >
                   {isSaving ? "处理中" : "发布"}
-                </button>
-                <AdminLogoutButton className={compactGhostButtonClass} />
+                </Button>
+                <AdminLogoutButton size="default" variant="outline" />
               </div>
             </div>
           </div>
@@ -601,114 +635,135 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
 
         <div className={gridClassName}>
           <div className="min-w-0 xl:sticky xl:top-3 xl:self-start">
-            <div className="space-y-3">
-              <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                <div className="flex flex-wrap gap-2">
+            {isLeftPanelOpen ? (
+              <div className="space-y-3">
+                <div className="flex justify-start">
                   <button
-                    className={`${compactTabButtonClass} ${
-                      leftPanelTab === "structure"
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                        : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
-                    onClick={() => setLeftPanelTab("structure")}
+                    className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 md:text-sm"
+                    onClick={() => setIsLeftPanelOpen(false)}
                     type="button"
                   >
-                    页面结构
-                  </button>
-                  <button
-                    className={`${compactTabButtonClass} ${
-                      leftPanelTab === "blocks"
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                        : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
-                    onClick={() => setLeftPanelTab("blocks")}
-                    type="button"
-                  >
-                    添加模块
+                    收起左栏
                   </button>
                 </div>
-              </div>
-
-              {leftPanelTab === "structure" ? (
-                <aside className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">结构视图</p>
-                    <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
-                      页面大纲
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                      先选中模块，再去右侧改字段，配置会更清晰。
-                    </p>
+                <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      className={`${compactTabButtonClass} ${
+                        leftPanelTab === "structure"
+                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                          : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                      onClick={() => setLeftPanelTab("structure")}
+                      type="button"
+                    >
+                      页面结构
+                    </button>
+                    <button
+                      className={`${compactTabButtonClass} ${
+                        leftPanelTab === "blocks"
+                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                          : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                      onClick={() => setLeftPanelTab("blocks")}
+                      type="button"
+                    >
+                      添加模块
+                    </button>
                   </div>
+                </div>
 
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p className="text-sm font-medium text-slate-900">当前页面</p>
-                    <p className="mt-1.5 text-sm text-slate-600">
-                      {document.page.title} · {document.sections.length} 个模块
-                    </p>
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        className="rounded-md bg-[var(--primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--primary-foreground)]"
-                        onClick={() => {
-                          setInspectorTab("public");
-                          setIsInspectorOpen(true);
-                        }}
-                        type="button"
-                      >
-                        打开全站设置
-                      </button>
-                      <button
-                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
-                        onClick={() => setLeftPanelTab("blocks")}
-                        type="button"
-                      >
-                        继续加模块
-                      </button>
+                {leftPanelTab === "structure" ? (
+                  <aside className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-slate-500">结构视图</p>
+                      <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+                        页面大纲
+                      </h3>
+                      <p className="mt-1.5 text-sm leading-6 text-slate-600">
+                        先选中模块，再去右侧改字段，配置会更清晰。
+                      </p>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    {document.sections.map((section, index) => {
-                      const definition = blockRegistry[section.type];
-                      const isSelected = selectedSectionId === section.id;
-
-                      return (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-sm font-medium text-slate-900">当前页面</p>
+                      <p className="mt-1.5 text-sm text-slate-600">
+                        {document.page.title} · {document.sections.length} 个模块
+                      </p>
+                      <div className="mt-3 flex gap-2">
                         <button
-                          className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
-                            isSelected
-                              ? "border-[var(--primary)] bg-[var(--primary-soft)]"
-                              : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
-                          }`}
-                          key={section.id}
+                          className="rounded-md bg-[var(--primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--primary-foreground)]"
                           onClick={() => {
-                            setSelectedSectionId(section.id);
-                            setInspectorTab("module");
+                            setInspectorTab("public");
                             setIsInspectorOpen(true);
                           }}
                           type="button"
                         >
-                          <div className="flex items-start gap-3">
-                            <span className="rounded-md bg-[var(--primary)] px-2 py-0.5 text-[11px] font-semibold text-[var(--primary-foreground)]">
-                              {index + 1}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-slate-950">
-                                {definition.label}
-                              </p>
-                              <p className="mt-1 text-xs leading-5 text-slate-500">
-                                {getSectionDescription(section)}
-                              </p>
-                            </div>
-                          </div>
+                          打开全站设置
                         </button>
-                      );
-                    })}
-                  </div>
-                </aside>
-              ) : (
-                <BlockPalette onAddBlock={handleAddBlock} />
-              )}
-            </div>
+                        <button
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
+                          onClick={() => setLeftPanelTab("blocks")}
+                          type="button"
+                        >
+                          继续加模块
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {document.sections.map((section, index) => {
+                        const definition = blockRegistry[section.type];
+                        const isSelected = selectedSectionId === section.id;
+
+                        return (
+                          <button
+                            className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                              isSelected
+                                ? "border-[var(--primary)] bg-[var(--primary-soft)]"
+                                : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
+                            }`}
+                            key={section.id}
+                            onClick={() => {
+                              setSelectedSectionId(section.id);
+                              setInspectorTab("module");
+                              setIsInspectorOpen(true);
+                            }}
+                            type="button"
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="rounded-md bg-[var(--primary)] px-2 py-0.5 text-[11px] font-semibold text-[var(--primary-foreground)]">
+                                {index + 1}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-slate-950">
+                                  {definition.label}
+                                </p>
+                                <p className="mt-1 text-xs leading-5 text-slate-500">
+                                  {getSectionDescription(section)}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </aside>
+                ) : (
+                  <BlockPalette onAddBlock={handleAddBlock} />
+                )}
+              </div>
+            ) : (
+              <aside className="flex min-h-[112px] items-start justify-center rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+                <button
+                  className="flex min-h-[52px] w-full items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-xs font-medium text-slate-600 transition hover:border-[var(--primary)] hover:text-[var(--primary-strong)] md:text-sm"
+                  onClick={() => setIsLeftPanelOpen(true)}
+                  type="button"
+                >
+                  展开
+                </button>
+              </aside>
+            )}
           </div>
 
           <section className="min-h-[calc(100vh-9.5rem)] rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--card)_82%,white)] p-3 shadow-sm backdrop-blur md:p-4">

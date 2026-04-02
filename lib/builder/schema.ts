@@ -12,7 +12,11 @@ import { statsStripSectionSchema } from "@/lib/builder/blocks/stats-strip";
 import { teamMembersSectionSchema } from "@/lib/builder/blocks/team-members";
 import { techHighlightsSectionSchema } from "@/lib/builder/blocks/tech-highlights";
 import { testimonialsSectionSchema } from "@/lib/builder/blocks/testimonials";
-import { createSiteConfig, footerTemplateCatalog } from "@/lib/builder/site-config";
+import {
+  createSiteConfig,
+  footerTemplateCatalog,
+  navigationTemplateCatalog,
+} from "@/lib/builder/site-config";
 
 export const siteNavigationLinkSchema = z.object({
   label: z.string().min(1),
@@ -57,6 +61,14 @@ export const pageDocumentSchema = z.object({
     tagline: z.string().default(""),
     logoSrc: z.string().default(""),
     faviconSrc: z.string().default(""),
+    navigationTemplate: z
+      .enum(
+        navigationTemplateCatalog.map((template) => template.id) as [
+          (typeof navigationTemplateCatalog)[number]["id"],
+          ...(typeof navigationTemplateCatalog)[number]["id"][],
+        ],
+      )
+      .default("filled"),
     navigationLinks: z.array(siteNavigationLinkSchema).default([]),
     footer: siteFooterSchema.default(createSiteConfig({ name: "PageForge" }).footer),
   }),

@@ -5,13 +5,15 @@ export const enterprisePageCatalog = [
     title: "首页",
     description: "品牌总览页，用来承接企业简介、核心能力与主要转化入口。",
     required: true,
+    defaultSelected: true,
   },
   {
     key: "services-products",
     slug: "services-products",
     title: "服务与产品",
     description: "说明服务矩阵、解决方案和产品能力边界。",
-    required: true,
+    required: false,
+    defaultSelected: true,
   },
   {
     key: "technology-rd",
@@ -19,13 +21,15 @@ export const enterprisePageCatalog = [
     title: "技术研发",
     description: "适合需要突出平台能力、架构深度和研发体系的企业。",
     required: false,
+    defaultSelected: false,
   },
   {
     key: "news",
     slug: "news",
     title: "新闻资讯",
     description: "沉淀企业动态、行业观点和品牌内容资产。",
-    required: true,
+    required: false,
+    defaultSelected: true,
   },
   {
     key: "about-us",
@@ -33,20 +37,22 @@ export const enterprisePageCatalog = [
     title: "关于我们",
     description: "介绍企业定位、团队能力和发展历程。",
     required: true,
+    defaultSelected: true,
   },
   {
     key: "contact",
     slug: "contact",
     title: "联系我们",
     description: "提供清晰的商务沟通入口与联系信息。",
-    required: true,
+    required: false,
+    defaultSelected: true,
   },
 ] as const;
 
 export type EnterprisePageKey = (typeof enterprisePageCatalog)[number]["key"];
 
 export const defaultSelectedEnterprisePages = enterprisePageCatalog
-  .filter((page) => page.required)
+  .filter((page) => page.defaultSelected)
   .map((page) => page.key) as EnterprisePageKey[];
 
 export const standardEnterprisePages = enterprisePageCatalog.map(

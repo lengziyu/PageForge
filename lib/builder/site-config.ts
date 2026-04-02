@@ -24,6 +24,26 @@ export const footerTemplateCatalog = [
 
 export type FooterTemplateId = (typeof footerTemplateCatalog)[number]["id"];
 
+export const navigationTemplateCatalog = [
+  {
+    id: "filled",
+    name: "胶囊高亮",
+    description: "当前页面使用主色胶囊高亮，其它项使用浅底悬浮。",
+  },
+  {
+    id: "underline",
+    name: "下划线导航",
+    description: "文字更轻量，当前页面通过下划线与主色强调。",
+  },
+  {
+    id: "outline",
+    name: "描边分段",
+    description: "所有菜单项都有描边，当前页面使用浅背景强调。",
+  },
+] as const;
+
+export type NavigationTemplateId = (typeof navigationTemplateCatalog)[number]["id"];
+
 export type SiteNavigationLink = {
   label: string;
   href: string;
@@ -44,6 +64,7 @@ export type SiteConfigInput = {
   tagline?: string;
   logoSrc?: string;
   faviconSrc?: string;
+  navigationTemplate?: NavigationTemplateId;
   navigationLinks?: SiteNavigationLink[];
   footer?: Partial<SiteFooterConfig>;
 };
@@ -93,6 +114,7 @@ export function createSiteConfig(input: SiteConfigInput) {
     tagline: input.tagline ?? "",
     logoSrc: input.logoSrc ?? "",
     faviconSrc: input.faviconSrc ?? input.logoSrc ?? "",
+    navigationTemplate: input.navigationTemplate ?? "filled",
     navigationLinks: input.navigationLinks ?? [],
     footer: createSiteFooterConfig(input.footer),
   };

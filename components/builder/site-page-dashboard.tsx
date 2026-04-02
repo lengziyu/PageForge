@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import type { FormEvent } from "react";
-import { SiteTemplateDialog } from "@/components/builder/site-template-dialog";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
-import type {
-  EnterprisePageKey,
-  SiteTemplateId,
-} from "@/lib/builder/template-catalog";
-import type { FooterTemplateId } from "@/lib/builder/site-config";
 
 type SitePageDashboardProps = {
   pages: BuilderPageListItem[];
@@ -19,12 +13,6 @@ type SitePageDashboardProps = {
   onSlugChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onDelete: (page: BuilderPageListItem) => void;
-  onPublishSite: () => void;
-  onReplaceSite: (input: {
-    templateId: SiteTemplateId;
-    selectedPages: EnterprisePageKey[];
-    footerTemplate: FooterTemplateId;
-  }) => void;
 };
 
 function formatUpdatedAt(value: string | null): string {
@@ -47,41 +35,9 @@ export function SitePageDashboard({
   onSlugChange,
   onSubmit,
   onDelete,
-  onPublishSite,
-  onReplaceSite,
 }: SitePageDashboardProps) {
-  const compactButtonClass =
-    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50";
-
   return (
-    <div className="space-y-5">
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">站点配置</p>
-            <h2 className="mt-1.5 text-lg font-semibold text-slate-950 md:text-xl">当前站点已初始化</h2>
-            <p className="mt-1.5 text-sm leading-6 text-slate-600">
-              你可以重新选择行业模板覆盖站点，也可以直接一键发布整站，把当前所有页面统一上线。
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Link className={compactButtonClass} href="/editor/content">
-              内容中心
-            </Link>
-            <button
-              className="inline-flex items-center justify-center rounded-lg bg-[var(--primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isSubmitting}
-              onClick={onPublishSite}
-              type="button"
-            >
-              发布整站
-            </button>
-            <SiteTemplateDialog isSubmitting={isSubmitting} onReplaceSite={onReplaceSite} />
-          </div>
-        </div>
-      </section>
-
+    <div className="space-y-4">
       <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
         <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div>

@@ -2,12 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
 
 type AdminLogoutButtonProps = {
   className?: string;
+  variant?: React.ComponentProps<typeof Button>["variant"];
+  size?: React.ComponentProps<typeof Button>["size"];
 };
 
-export function AdminLogoutButton({ className }: AdminLogoutButtonProps) {
+export function AdminLogoutButton({
+  className,
+  variant = "outline",
+  size = "default",
+}: AdminLogoutButtonProps) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -35,17 +42,16 @@ export function AdminLogoutButton({ className }: AdminLogoutButtonProps) {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <button
-        className={
-          className ??
-          "rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-        }
+      <Button
+        className={className}
         disabled={isPending}
         onClick={handleLogout}
         type="button"
+        size={size}
+        variant={variant}
       >
         {isPending ? "退出中..." : "退出登录"}
-      </button>
+      </Button>
       {message ? <p className="text-xs text-[var(--muted-foreground)]">{message}</p> : null}
     </div>
   );
