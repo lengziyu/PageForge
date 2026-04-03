@@ -29,6 +29,25 @@ function MiniHeroPreview() {
   );
 }
 
+function MiniBannerCarouselPreview() {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="relative overflow-hidden rounded-md border border-slate-200 bg-slate-100">
+        <div className="h-16 bg-[linear-gradient(120deg,#dbeafe_0%,#bfdbfe_36%,#c7d2fe_68%,#e2e8f0_100%)]" />
+        <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-1 rounded-full bg-slate-900/30 px-2 py-1">
+          {[0, 1, 2].map((item) => (
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${item === 0 ? "bg-white" : "bg-white/55"}`}
+              key={item}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mt-2 h-2 w-1/2 rounded bg-slate-300" />
+    </div>
+  );
+}
+
 function MiniStatsPreview() {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3">
@@ -126,6 +145,26 @@ function MiniNewsPreview() {
             <div className="h-8 w-8 rounded-md bg-slate-200" />
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniLocationMapPreview() {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mb-2 h-3 w-20 rounded bg-slate-300" />
+      <div className="grid grid-cols-[1.2fr_0.8fr] gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
+        <div className="relative overflow-hidden rounded-md border border-slate-200 bg-slate-100">
+          <div className="h-16 bg-[radial-gradient(circle_at_20%_20%,#dbeafe_0%,#bfdbfe_36%,#cbd5e1_100%)]" />
+          <div className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full bg-indigo-500" />
+        </div>
+        <div className="space-y-1.5 rounded-md border border-slate-200 bg-white p-2">
+          <div className="h-2 w-4/5 rounded bg-slate-300" />
+          <div className="h-1.5 w-full rounded bg-slate-200" />
+          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+          <div className="h-1.5 w-2/3 rounded bg-slate-100" />
+        </div>
       </div>
     </div>
   );
@@ -249,6 +288,8 @@ function BlockPreview({ type }: { type: BuilderBlockType }) {
   switch (type) {
     case "hero":
       return <MiniHeroPreview />;
+    case "banner-carousel":
+      return <MiniBannerCarouselPreview />;
     case "stats-strip":
       return <MiniStatsPreview />;
     case "feature-list":
@@ -259,6 +300,8 @@ function BlockPreview({ type }: { type: BuilderBlockType }) {
       return <MiniTechPreview />;
     case "news-list":
       return <MiniNewsPreview />;
+    case "location-map":
+      return <MiniLocationMapPreview />;
     case "company-intro":
       return <MiniCompanyPreview />;
     case "contact-methods":

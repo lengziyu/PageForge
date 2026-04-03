@@ -494,13 +494,22 @@ export async function publishSite(input?: {
     const pageTitleMap = new Map(
       pageDocuments.map((page) => [page.slug, page.document.page.title]),
     );
-    const currentSiteConfig = {
-      ...input.currentDocument.site,
-      navigationLinks: input.currentDocument.site.navigationLinks.map((link) => ({
+    const normalizeNavigationLinks = (
+      links: BuilderPageDocument["site"]["navigationLinks"],
+    ) =>
+      links.map((link) => ({
         ...link,
         label: pageTitleMap.get(link.slug) ?? link.label,
         href: `/sites/${link.slug}`,
-      })),
+        children: (link.children ?? []).map((child) => ({
+          ...child,
+          label: pageTitleMap.get(child.slug) ?? child.label,
+          href: `/sites/${child.slug}`,
+        })),
+      }));
+    const currentSiteConfig = {
+      ...input.currentDocument.site,
+      navigationLinks: normalizeNavigationLinks(input.currentDocument.site.navigationLinks),
     };
 
     await getPrismaClient().$transaction(

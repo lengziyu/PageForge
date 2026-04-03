@@ -1,3 +1,7 @@
+import {
+  bannerCarouselBlockDefinition,
+  type BannerCarouselProps,
+} from "@/lib/builder/blocks/banner-carousel";
 import { ctaBlockDefinition, type CtaBlockProps } from "@/lib/builder/blocks/cta";
 import {
   companyIntroBlockDefinition,
@@ -23,6 +27,10 @@ import {
   newsListBlockDefinition,
   type NewsListProps,
 } from "@/lib/builder/blocks/news-list";
+import {
+  locationMapBlockDefinition,
+  type LocationMapProps,
+} from "@/lib/builder/blocks/location-map";
 import {
   partnersBlockDefinition,
   type PartnersProps,
@@ -50,11 +58,13 @@ import {
 
 export const blockDefinitions = [
   heroBlockDefinition,
+  bannerCarouselBlockDefinition,
   statsStripBlockDefinition,
   featureListBlockDefinition,
   serviceGridBlockDefinition,
   techHighlightsBlockDefinition,
   newsListBlockDefinition,
+  locationMapBlockDefinition,
   companyIntroBlockDefinition,
   contactMethodsBlockDefinition,
   ctaBlockDefinition,
@@ -75,6 +85,7 @@ export const blockRegistry = Object.fromEntries(
 ) as BlockDefinitionRecord;
 
 export type {
+  BannerCarouselProps,
   CompanyIntroProps,
   ContactMethodsProps,
   CtaBlockProps,
@@ -82,6 +93,7 @@ export type {
   FeatureListBlockProps,
   HeroBlockProps,
   NewsListProps,
+  LocationMapProps,
   PartnersProps,
   ServiceGridProps,
   StatsStripProps,

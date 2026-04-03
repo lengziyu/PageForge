@@ -50,10 +50,35 @@ export const navigationTemplateCatalog = [
 
 export type NavigationTemplateId = (typeof navigationTemplateCatalog)[number]["id"];
 
+export const scrollAnimationPresetCatalog = [
+  {
+    id: "rise",
+    name: "往上一点",
+  },
+  {
+    id: "fade",
+    name: "渐隐渐现",
+  },
+  {
+    id: "zoom",
+    name: "轻微放大",
+  },
+] as const;
+
+export type ScrollAnimationPresetId =
+  (typeof scrollAnimationPresetCatalog)[number]["id"];
+
+export type SiteNavigationChildLink = {
+  label: string;
+  href: string;
+  slug: string;
+};
+
 export type SiteNavigationLink = {
   label: string;
   href: string;
   slug: string;
+  children: SiteNavigationChildLink[];
 };
 
 export type SiteFooterConfig = {
@@ -71,6 +96,9 @@ export type SiteConfigInput = {
   logoSrc?: string;
   faviconSrc?: string;
   heroBannerSources?: string[];
+  scrollAnimationEnabled?: boolean;
+  scrollAnimationPreset?: ScrollAnimationPresetId;
+  scrollAnimationDurationMs?: number;
   navigationTemplate?: NavigationTemplateId;
   navigationLinks?: SiteNavigationLink[];
   footer?: Partial<SiteFooterConfig>;
@@ -99,7 +127,23 @@ export function buildNavigationLinks(
       label: page.title,
       href: `/sites/${page.slug}`,
       slug: page.slug,
+      children: [],
     }));
+}
+
+function normalizeNavigationLinks(
+  links?: SiteNavigationLink[],
+): SiteNavigationLink[] {
+  return (links ?? []).map((link) => ({
+    label: link.label,
+    href: link.href,
+    slug: link.slug,
+    children: (link.children ?? []).map((child) => ({
+      label: child.label,
+      href: child.href,
+      slug: child.slug,
+    })),
+  }));
 }
 
 export function createSiteFooterConfig(
@@ -116,6 +160,8 @@ export function createSiteFooterConfig(
 }
 
 export function createSiteConfig(input: SiteConfigInput) {
+  const duration = input.scrollAnimationDurationMs ?? 1500;
+
   return {
     name: resolveSiteName(input.name),
     tagline: input.tagline ?? "",
@@ -125,8 +171,11 @@ export function createSiteConfig(input: SiteConfigInput) {
       logoSrc: input.logoSrc,
     }),
     heroBannerSources: normalizeHeroBannerSources(input.heroBannerSources),
+    scrollAnimationEnabled: input.scrollAnimationEnabled ?? true,
+    scrollAnimationPreset: input.scrollAnimationPreset ?? "rise",
+    scrollAnimationDurationMs: Math.max(300, Math.min(5000, duration)),
     navigationTemplate: input.navigationTemplate ?? "filled",
-    navigationLinks: input.navigationLinks ?? [],
+    navigationLinks: normalizeNavigationLinks(input.navigationLinks),
     footer: createSiteFooterConfig(input.footer),
   };
 }

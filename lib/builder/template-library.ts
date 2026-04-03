@@ -3,6 +3,7 @@ import type { CompanyIntroProps } from "@/lib/builder/blocks/company-intro";
 import type { ContactMethodsProps } from "@/lib/builder/blocks/contact-methods";
 import type { FeatureListBlockProps } from "@/lib/builder/blocks/feature-list";
 import type { HeroBlockProps } from "@/lib/builder/blocks/hero";
+import type { LocationMapProps } from "@/lib/builder/blocks/location-map";
 import type { NewsListProps } from "@/lib/builder/blocks/news-list";
 import type { ServiceGridProps } from "@/lib/builder/blocks/service-grid";
 import type { StatsStripProps } from "@/lib/builder/blocks/stats-strip";
@@ -235,6 +236,22 @@ function createContactMethods(config: TemplateConfig): ContactMethodsProps {
   };
 }
 
+function createLocationMap(config: TemplateConfig): LocationMapProps {
+  return {
+    title: "公司地址与到访路线",
+    description: "支持高德与百度地图切换，客户可以直接定位公司地址并发起联系。",
+    provider: "amap",
+    layout: "split",
+    companyName: config.siteName,
+    address: config.address,
+    phone: config.phone,
+    email: config.contactEmail,
+    mapEmbedSrc: "",
+    heightDesktop: 460,
+    heightMobile: 320,
+  };
+}
+
 function createHomeCta(): CtaBlockProps {
   return {
     title: "让企业官网真正承担品牌表达与业务转化",
@@ -450,6 +467,7 @@ function buildContact({ config, site }: TemplatePageBuilderContext) {
         }),
       ),
       createSection("contact", "contact-methods", createContactMethods(config)),
+      createSection("contact", "location-map", createLocationMap(config)),
       createSection("contact", "company-intro", {
         title: "为什么值得联系我们",
         description: "让客户在发起咨询前，先对合作方式、交付节奏和团队响应建立预期。",

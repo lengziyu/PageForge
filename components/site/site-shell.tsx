@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
 import type { BuilderPageListItem } from "@/lib/builder/page-contracts";
 import type { BuilderPageDocument } from "@/lib/builder/schema";
+import type { SiteNavigationLink } from "@/lib/builder/site-config";
 import { resolveSiteLogoSrc, resolveSiteName } from "@/lib/brand/identity";
 
 type SiteShellProps = {
@@ -18,9 +18,12 @@ function buildNavigationItems(
   pages: BuilderPageListItem[],
 ) {
   const publishedSlugs = new Set(pages.map((page) => page.slug));
-  const configuredLinks = document.site.navigationLinks.filter((link) =>
-    publishedSlugs.has(link.slug),
-  );
+  const configuredLinks: SiteNavigationLink[] = document.site.navigationLinks
+    .filter((link) => publishedSlugs.has(link.slug))
+    .map((link) => ({
+      ...link,
+      children: (link.children ?? []).filter((child) => publishedSlugs.has(child.slug)),
+    }));
 
   if (configuredLinks.length > 0) {
     return configuredLinks;
@@ -30,6 +33,7 @@ function buildNavigationItems(
     label: page.title,
     href: `/sites/${page.slug}`,
     slug: page.slug,
+    children: [],
   }));
 }
 
@@ -203,20 +207,50 @@ export function SiteShell({
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <nav className={getNavigationContainerClass(navigationTemplate)}>
               {navigationItems.map((item) => {
-                const isActive = item.slug === activeSlug;
+                const hasChildren = (item.children?.length ?? 0) > 0;
+                const isActive =
+                  item.slug === activeSlug ||
+                  (item.children ?? []).some((child) => child.slug === activeSlug);
 
                 return (
-                  <Link
-                    className={getNavigationItemClass(navigationTemplate, isActive)}
-                    href={item.href}
-                    key={item.slug}
-                  >
-                    {item.label}
-                  </Link>
+                  <div className="relative flex items-center gap-1" key={item.slug}>
+                    <Link
+                      className={getNavigationItemClass(navigationTemplate, isActive)}
+                      href={item.href}
+                    >
+                      {item.label}
+                    </Link>
+
+                    {hasChildren ? (
+                      <details className="group relative">
+                        <summary className="list-none cursor-pointer rounded-md px-1.5 py-2 text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 [&::-webkit-details-marker]:hidden">
+                          ▾
+                        </summary>
+                        <div className="mt-2 min-w-[160px] space-y-1 rounded-lg border border-slate-200 bg-white p-2 shadow-lg lg:absolute lg:left-0 lg:top-full lg:z-40">
+                          {item.children?.map((child) => {
+                            const isChildActive = child.slug === activeSlug;
+
+                            return (
+                              <Link
+                                className={`block rounded-md px-3 py-2 text-sm transition ${
+                                  isChildActive
+                                    ? "bg-[var(--primary-soft)] text-[var(--primary-strong)]"
+                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                }`}
+                                href={child.href}
+                                key={`${item.slug}-${child.slug}`}
+                              >
+                                {child.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </details>
+                    ) : null}
+                  </div>
                 );
               })}
             </nav>
-            <BrandThemeSwitcher />
           </div>
         </div>
       </header>

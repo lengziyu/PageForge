@@ -30,7 +30,6 @@ import { BlockInspector } from "@/components/builder/block-inspector";
 import { BlockPalette } from "@/components/builder/block-palette";
 import { EditorFlowNav } from "@/components/builder/editor-flow-nav";
 import { SitePageNav } from "@/components/builder/site-page-nav";
-import { SiteSettingsPanel } from "@/components/builder/site-settings-panel";
 import { SortableSectionCard } from "@/components/builder/sortable-section-card";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,6 @@ type PageEditorProps = {
   sitePages: BuilderPageListItem[];
 };
 
-type InspectorTab = "public" | "module";
 type LeftPanelTab = "structure" | "blocks";
 
 const AUTO_CANVAS_MIN_SCALE = 0.5;
@@ -64,7 +62,9 @@ function getStatusLabel(status: BuilderPageStatus) {
 
 function getSectionDescription(section: BuilderPageSection) {
   if (section.type === "news-list") {
-    return section.props.sourceMode === "newsroom" ? "连接新闻中心" : "手动维护资讯项";
+    return section.props.sourceMode === "newsroom"
+      ? "连接资讯中心"
+      : "手动列表（建议改为资讯中心）";
   }
 
   if (section.type === "service-grid") {
@@ -77,7 +77,7 @@ function getSectionDescription(section: BuilderPageSection) {
 
     return section.props.sourceMode === "products"
       ? `连接产品中心 · ${variantLabel}`
-      : `手动维护内容 · ${variantLabel}`;
+      : `手动列表（建议改为产品中心） · ${variantLabel}`;
   }
 
   return blockRegistry[section.type].description;
@@ -114,6 +114,7 @@ function getNavigationItems(
     label: item.title,
     href: `/sites/${item.slug}`,
     slug: item.slug,
+    children: [],
   }));
 }
 
@@ -178,14 +179,27 @@ function CanvasHeaderPreview({
         <nav className={getCanvasNavigationContainerClass(navigationTemplate)}>
           {items.map((item) => {
             const isActive = item.slug === page.slug;
+            const hasChildren = (item.children?.length ?? 0) > 0;
 
             return (
-              <span
-                className={getCanvasNavigationItemClass(navigationTemplate, isActive)}
-                key={item.slug}
-              >
-                {item.label}
-              </span>
+              <div className="relative" key={item.slug}>
+                <span className={getCanvasNavigationItemClass(navigationTemplate, isActive)}>
+                  {item.label}
+                  {hasChildren ? " ▾" : ""}
+                </span>
+                {hasChildren ? (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {item.children?.map((child) => (
+                      <span
+                        className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] text-slate-500"
+                        key={`${item.slug}-${child.slug}`}
+                      >
+                        {child.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </nav>
@@ -277,7 +291,6 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
   const [collapsedSectionIds, setCollapsedSectionIds] = useState<string[]>([]);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
-  const [inspectorTab, setInspectorTab] = useState<InspectorTab>("module");
   const [leftPanelTab, setLeftPanelTab] = useState<LeftPanelTab>("structure");
   const [canvasScale, setCanvasScale] = useState(1);
   const [canvasBaseWidth, setCanvasBaseWidth] = useState<number | null>(null);
@@ -401,7 +414,6 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
     });
 
     setSelectedSectionId(nextSection.id);
-    setInspectorTab("module");
     setStatusMessage(`已新增“${definition.label}”模块。`);
   };
 
@@ -440,13 +452,6 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
         ? current.filter((id) => id !== sectionId)
         : [...current, sectionId],
     );
-  };
-
-  const handleSiteChange = (nextSite: typeof document.site) => {
-    setDocument((currentDocument) => ({
-      ...currentDocument,
-      site: nextSite,
-    }));
   };
 
   const handleHeroBannerUploaded = (src: string) => {
@@ -608,6 +613,9 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
 
               <div className="flex flex-wrap items-center gap-1.5">
                 <BrandThemeSwitcher className="h-9 w-9" />
+                <Button asChild size="default" variant="outline">
+                  <Link href="/editor/content">内容管理</Link>
+                </Button>
                 {pageStatus === "PUBLISHED" ? (
                   <Button asChild size="default" variant="outline">
                     <Link href={`/sites/${initialPage.slug}`}>预览</Link>
@@ -646,7 +654,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
         <div className={gridClassName}>
           <div className="min-w-0 xl:sticky xl:top-3 xl:self-start">
             {isLeftPanelOpen ? (
-              <div className="space-y-3">
+              <div className="space-y-3 xl:max-h-[calc(100vh-1rem)] xl:overflow-hidden">
                 <div className="flex justify-start">
                   <button
                     className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 md:text-sm"
@@ -684,41 +692,14 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                 </div>
 
                 {leftPanelTab === "structure" ? (
-                  <aside className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.24em] text-slate-500">结构视图</p>
-                      <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
-                        页面大纲
-                      </h3>
-                      <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                        先选中模块，再去右侧改字段，配置会更清晰。
-                      </p>
-                    </div>
+                  <aside className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:max-h-[calc(100vh-10.5rem)] xl:overflow-y-auto">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">结构视图</p>
 
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                       <p className="text-sm font-medium text-slate-900">当前页面</p>
                       <p className="mt-1.5 text-sm text-slate-600">
                         {document.page.title} · {document.sections.length} 个模块
                       </p>
-                      <div className="mt-3 flex gap-2">
-                        <button
-                          className="rounded-md bg-[var(--primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--primary-foreground)]"
-                          onClick={() => {
-                            setInspectorTab("public");
-                            setIsInspectorOpen(true);
-                          }}
-                          type="button"
-                        >
-                          打开全站设置
-                        </button>
-                        <button
-                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
-                          onClick={() => setLeftPanelTab("blocks")}
-                          type="button"
-                        >
-                          继续加模块
-                        </button>
-                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -736,7 +717,6 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                             key={section.id}
                             onClick={() => {
                               setSelectedSectionId(section.id);
-                              setInspectorTab("module");
                               setIsInspectorOpen(true);
                             }}
                             type="button"
@@ -760,7 +740,9 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                     </div>
                   </aside>
                 ) : (
-                  <BlockPalette onAddBlock={handleAddBlock} />
+                  <div className="xl:max-h-[calc(100vh-10.5rem)] xl:overflow-y-auto">
+                    <BlockPalette onAddBlock={handleAddBlock} />
+                  </div>
                 )}
               </div>
             ) : (
@@ -827,7 +809,6 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                               onRemove={() => handleRemoveSection(section.id)}
                               onSelect={() => {
                                 setSelectedSectionId(section.id);
-                                setInspectorTab("module");
                               }}
                               onToggleCollapse={() => handleToggleCollapse(section.id)}
                               section={section}
@@ -845,7 +826,7 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
 
           <div className="xl:sticky xl:top-3 xl:self-start">
             {isInspectorOpen ? (
-              <div className="space-y-3">
+              <div className="space-y-3 xl:max-h-[calc(100vh-1rem)] xl:overflow-hidden">
                 <div className="flex justify-end">
                   <button
                     className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 md:text-sm"
@@ -856,45 +837,17 @@ export function PageEditor({ initialPage, sitePages }: PageEditorProps) {
                   </button>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      className={`${compactTabButtonClass} ${
-                        inspectorTab === "module"
-                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                          : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                      onClick={() => setInspectorTab("module")}
-                      type="button"
-                    >
-                      模块设置
-                    </button>
-                    <button
-                      className={`${compactTabButtonClass} ${
-                        inspectorTab === "public"
-                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                          : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                      onClick={() => setInspectorTab("public")}
-                      type="button"
-                    >
-                      公共设置
-                    </button>
-                  </div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">模块设置</p>
+                  <p className="mt-1 text-xs text-slate-500">全站公共配置可以到内容中心设置。</p>
                 </div>
-                {inspectorTab === "module" ? (
+                <div className="xl:max-h-[calc(100vh-9.2rem)] xl:overflow-y-auto">
                   <BlockInspector
                     heroBannerSources={document.site.heroBannerSources}
                     onChange={handleUpdateSection}
                     onHeroBannerUploaded={handleHeroBannerUploaded}
                     section={selectedSection}
                   />
-                ) : (
-                  <SiteSettingsPanel
-                    onChange={handleSiteChange}
-                    site={document.site}
-                    sitePages={sitePages}
-                  />
-                )}
+                </div>
               </div>
             ) : (
               <aside className="flex min-h-[112px] items-start justify-center rounded-xl border border-slate-200 bg-white p-2 shadow-sm">

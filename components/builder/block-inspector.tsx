@@ -1,8 +1,17 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { uploadBrowserFile } from "@/lib/media/client";
 import { buildHeroBannerSelectOptions } from "@/lib/builder/banner-media";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ImageSizeHint } from "@/components/ui/image-size-hint";
 import type { FeatureIcon } from "@/lib/builder/blocks/feature-list";
 import type { BuilderPageSection } from "@/lib/builder/schema";
 
@@ -18,6 +27,14 @@ type FieldProps = {
   value: string;
   onChange: (value: string) => void;
   multiline?: boolean;
+};
+
+type NumberFieldProps = {
+  label: string;
+  value: number;
+  min?: number;
+  max?: number;
+  onChange: (value: number) => void;
 };
 
 type SelectFieldProps = {
@@ -90,6 +107,29 @@ function Field({ label, value, onChange, multiline = false }: FieldProps) {
           value={value}
         />
       )}
+    </label>
+  );
+}
+
+function NumberField({ label, value, min, max, onChange }: NumberFieldProps) {
+  return (
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium text-slate-700 md:text-sm">{label}</span>
+      <input
+        className={inputClassName}
+        max={max}
+        min={min}
+        onChange={(event) => {
+          const parsed = Number(event.target.value);
+          if (!Number.isFinite(parsed)) {
+            return;
+          }
+          onChange(parsed);
+        }}
+        step={1}
+        type="number"
+        value={value}
+      />
     </label>
   );
 }
@@ -170,6 +210,8 @@ export function BlockInspector({
   heroBannerSources,
   onHeroBannerUploaded,
 }: BlockInspectorProps) {
+  const [bannerPickerOpen, setBannerPickerOpen] = useState(false);
+
   if (!section) {
     return (
       <aside className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-sm leading-7 text-slate-500">
@@ -222,6 +264,7 @@ export function BlockInspector({
         />
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">上传背景图</span>
+          <ImageSizeHint guideKey="heroBanner" />
           <input
             accept="image/*"
             className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:text-white"
@@ -246,6 +289,213 @@ export function BlockInspector({
             type="file"
           />
         </label>
+      </SectionShell>
+    );
+  }
+
+  if (section.type === "banner-carousel") {
+    const props = section.props;
+    const maxSlides = 10;
+    const sourceOptions = buildHeroBannerSelectOptions([
+      ...(heroBannerSources ?? []),
+      ...props.slides,
+    ]);
+
+    const addSlide = (src: string) => {
+      if (props.slides.includes(src) || props.slides.length >= maxSlides) {
+        return;
+      }
+      onChange(
+        section.id,
+        replaceSectionProps(section, {
+          ...props,
+          slides: [...props.slides, src].slice(0, maxSlides),
+        }),
+      );
+    };
+
+    const removeSlide = (src: string) => {
+      if (props.slides.length <= 1) {
+        return;
+      }
+      onChange(
+        section.id,
+        replaceSectionProps(section, {
+          ...props,
+          slides: props.slides.filter((item) => item !== src),
+        }),
+      );
+    };
+
+    const availableOptions = sourceOptions.filter((option) => !props.slides.includes(option.value));
+
+    return (
+      <SectionShell caption="模块属性" title="Banner 轮播">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <ImageSizeHint className="text-slate-500" guideKey="heroBanner" />
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-medium text-slate-700 md:text-sm">当前轮播图片</span>
+            <span className="text-xs text-slate-500">
+              已选 {props.slides.length}/{maxSlides}
+            </span>
+          </div>
+          <div className="grid gap-2">
+            {props.slides.map((source) => (
+              <div
+                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2"
+                key={source}
+              >
+                <img
+                  alt="banner"
+                  className="h-12 w-20 rounded-md border border-slate-200 object-cover"
+                  src={source}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-slate-700">{source}</p>
+                </div>
+                <button
+                  className="rounded-md border border-rose-200 px-2 py-1 text-xs text-rose-700 disabled:opacity-40"
+                  disabled={props.slides.length <= 1}
+                  onClick={() => removeSlide(source)}
+                  type="button"
+                >
+                  移除
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            className="w-full rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-900 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={props.slides.length >= maxSlides}
+            onClick={() => setBannerPickerOpen(true)}
+            type="button"
+          >
+            新增 Banner 图
+          </button>
+        </div>
+
+        <Dialog onOpenChange={setBannerPickerOpen} open={bannerPickerOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>新增 Banner 图</DialogTitle>
+              <DialogDescription>可从已有图片中选择，或上传新图（最多 10 张）。</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              <ImageSizeHint guideKey="heroBanner" />
+              <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-slate-950 px-4 text-sm font-medium text-white">
+                上传新图
+                <input
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const file = event.target.files?.[0];
+
+                    if (!file || props.slides.length >= maxSlides) {
+                      return;
+                    }
+
+                    try {
+                      const url = await uploadBrowserFile(file, "blocks");
+                      addSlide(url);
+                      onHeroBannerUploaded?.(url);
+                      setBannerPickerOpen(false);
+                    } catch (error) {
+                      console.error("Failed to upload block asset", error);
+                    } finally {
+                      event.target.value = "";
+                    }
+                  }}
+                  type="file"
+                />
+              </label>
+            </div>
+
+            <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-slate-200 p-2">
+              {availableOptions.length === 0 ? (
+                <p className="px-2 py-6 text-center text-sm text-slate-500">暂无可选图片</p>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {availableOptions.map((option) => (
+                    <button
+                      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-indigo-300 hover:bg-indigo-50"
+                      key={option.value}
+                      onClick={() => {
+                        addSlide(option.value);
+                        setBannerPickerOpen(false);
+                      }}
+                      type="button"
+                    >
+                      <img
+                        alt="banner option"
+                        className="h-14 w-24 rounded-md border border-slate-200 object-cover"
+                        src={option.value}
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-medium text-slate-800">
+                          {option.label}
+                        </p>
+                        <p className="truncate text-[11px] text-slate-500">{option.value}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <NumberField
+          label="轮播间隔（毫秒）"
+          max={12000}
+          min={1500}
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, intervalMs: value }))
+          }
+          value={props.intervalMs}
+        />
+
+        <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+          {(
+            [
+              { key: "autoPlay", label: "自动轮播", checked: props.autoPlay },
+              { key: "showArrows", label: "显示左右箭头", checked: props.showArrows },
+              { key: "showDots", label: "显示底部圆点", checked: props.showDots },
+            ] as const
+          ).map((item) => (
+            <label className="flex items-center gap-2" key={item.key}>
+              <input
+                checked={item.checked}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  if (item.key === "autoPlay") {
+                    onChange(
+                      section.id,
+                      replaceSectionProps(section, { ...props, autoPlay: checked }),
+                    );
+                    return;
+                  }
+                  if (item.key === "showArrows") {
+                    onChange(
+                      section.id,
+                      replaceSectionProps(section, { ...props, showArrows: checked }),
+                    );
+                    return;
+                  }
+                  onChange(
+                    section.id,
+                    replaceSectionProps(section, { ...props, showDots: checked }),
+                  );
+                }}
+                type="checkbox"
+              />
+              <span>{item.label}</span>
+            </label>
+          ))}
+        </div>
       </SectionShell>
     );
   }
@@ -464,8 +714,8 @@ export function BlockInspector({
             )
           }
           options={[
-            { value: "manual", label: "手动维护" },
-            { value: "products", label: "产品中心" },
+            { value: "products", label: "产品中心（推荐）" },
+            { value: "manual", label: "手动列表（仅兼容）" },
           ]}
           value={props.sourceMode}
         />
@@ -487,18 +737,20 @@ export function BlockInspector({
           ]}
           value={props.variant}
         />
-        <Field
+        <NumberField
           label="展示数量"
+          max={12}
+          min={1}
           onChange={(value) =>
             onChange(
               section.id,
               replaceSectionProps(section, {
                 ...props,
-                showCount: Number(value || 3),
+                showCount: value,
               }),
             )
           }
-          value={String(props.showCount)}
+          value={props.showCount}
         />
         <Field
           label="详情按钮文案"
@@ -507,107 +759,9 @@ export function BlockInspector({
           }
           value={props.ctaLabel}
         />
-        {props.sourceMode === "products" ? (
-          <div className="rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-4 py-4 text-sm leading-7 text-indigo-950">
-            当前模块会优先读取“产品中心”里已发布的产品内容。你仍然可以保留下面的手动卡片，作为暂无产品时的占位内容。
-          </div>
-        ) : null}
-        <div className="space-y-4">
-          {props.items.map((item, index) => (
-            <ItemCard
-              canRemove={props.items.length > 3}
-              key={`${section.id}-service-${index}`}
-              onRemove={() =>
-                onChange(
-                  section.id,
-                  replaceSectionProps(section, {
-                    ...props,
-                    items: removeArrayItem(props.items, index),
-                  }),
-                )
-              }
-              title={`服务项 ${index + 1}`}
-            >
-              <Field
-                label="编号"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, tag: value }),
-                    }),
-                  )
-                }
-                value={item.tag}
-              />
-              <Field
-                label="标题"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, title: value }),
-                    }),
-                  )
-                }
-                value={item.title}
-              />
-              <Field
-                label="封面图地址"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, coverImage: value }),
-                    }),
-                  )
-                }
-                value={item.coverImage}
-              />
-              <Field
-                label="描述"
-                multiline
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, {
-                        ...item,
-                        description: value,
-                      }),
-                    }),
-                  )
-                }
-                value={item.description}
-              />
-            </ItemCard>
-          ))}
+        <div className="rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-4 py-4 text-sm leading-7 text-indigo-950">
+          页面编辑只负责展示规则。产品条目的新增、删除、分类与正文维护，请在「内容中心 &gt; 产品中心」完成。
         </div>
-        <AddButton
-          label="新增服务项"
-          onClick={() =>
-            onChange(
-              section.id,
-              replaceSectionProps(section, {
-                ...props,
-                items: [
-                  ...props.items,
-                  {
-                    tag: `0${props.items.length + 1}`,
-                    title: "新增服务",
-                    description: "补充新的服务内容、产品模块或解决方案说明。",
-                    slug: "",
-                    coverImage: "/hero/technology-platform.svg",
-                  },
-                ],
-              }),
-            )
-          }
-        />
       </SectionShell>
     );
   }
@@ -749,150 +903,151 @@ export function BlockInspector({
             )
           }
           options={[
-            { value: "newsroom", label: "新闻后台" },
-            { value: "manual", label: "手动维护" },
+            { value: "newsroom", label: "资讯中心（推荐）" },
+            { value: "manual", label: "手动列表（仅兼容）" },
           ]}
           value={props.sourceMode}
         />
-        <Field
+        <NumberField
           label="展示数量"
+          max={12}
+          min={1}
           onChange={(value) =>
             onChange(
               section.id,
               replaceSectionProps(section, {
                 ...props,
-                showCount: Number(value || 3),
+                showCount: value,
               }),
             )
           }
-          value={String(props.showCount)}
+          value={props.showCount}
         />
-        <div className="space-y-4">
-          {props.items.map((item, index) => (
-            <ItemCard
-              canRemove={props.items.length > 1}
-              key={`${section.id}-news-${index}`}
-              onRemove={() =>
-                onChange(
-                  section.id,
-                  replaceSectionProps(section, {
-                    ...props,
-                    items: removeArrayItem(props.items, index),
-                  }),
-                )
-              }
-              title={`资讯项 ${index + 1}`}
-            >
-              <Field
-                label="分类"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, category: value }),
-                    }),
-                  )
-                }
-                value={item.category}
-              />
-              <Field
-                label="标题"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, title: value }),
-                    }),
-                  )
-                }
-                value={item.title}
-              />
-              <Field
-                label="日期"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, date: value }),
-                    }),
-                  )
-                }
-                value={item.date}
-              />
-              <Field
-                label="详情 slug"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, { ...item, slug: value }),
-                    }),
-                  )
-                }
-                value={item.slug}
-              />
-              <Field
-                label="封面图"
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, {
-                        ...item,
-                        coverImage: value,
-                      }),
-                    }),
-                  )
-                }
-                value={item.coverImage}
-              />
-              <Field
-                label="摘要"
-                multiline
-                onChange={(value) =>
-                  onChange(
-                    section.id,
-                    replaceSectionProps(section, {
-                      ...props,
-                      items: updateArrayItem(props.items, index, {
-                        ...item,
-                        summary: value,
-                      }),
-                    }),
-                  )
-                }
-                value={item.summary}
-              />
-            </ItemCard>
-          ))}
+        <div className="rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-4 py-4 text-sm leading-7 text-indigo-950">
+          页面编辑只负责展示规则。资讯条目的新增、删除、分类与正文维护，请在「内容中心 &gt; 资讯中心」完成。
         </div>
-        <AddButton
-          label="新增资讯项"
-          onClick={() =>
-            onChange(
-              section.id,
-              replaceSectionProps(section, {
-                ...props,
-                items: [
-                  ...props.items,
-                  {
-                    category: "最新动态",
-                    title: "新增资讯标题",
-                    date: "2026-03-29",
-                    summary: "补充新的新闻、文章或观点内容。",
-                    slug: "new-article",
-                    coverImage: "/hero/news-media-wall.svg",
-                  },
-                ],
-              }),
-            )
+      </SectionShell>
+    );
+  }
+
+  if (section.type === "location-map") {
+    const props = section.props;
+
+    return (
+      <SectionShell caption="模块属性" title="地图组件">
+        <Field
+          label="模块标题"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, title: value }))
           }
+          value={props.title}
         />
+        <Field
+          label="模块描述"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, description: value }))
+          }
+          value={props.description}
+        />
+        <div className="grid gap-3 md:grid-cols-2">
+          <SelectField
+            label="地图平台"
+            onChange={(value) =>
+              onChange(
+                section.id,
+                replaceSectionProps(section, {
+                  ...props,
+                  provider: value as "amap" | "baidu",
+                }),
+              )
+            }
+            options={[
+              { value: "amap", label: "高德地图" },
+              { value: "baidu", label: "百度地图" },
+            ]}
+            value={props.provider}
+          />
+          <SelectField
+            label="展示布局"
+            onChange={(value) =>
+              onChange(
+                section.id,
+                replaceSectionProps(section, {
+                  ...props,
+                  layout: value as "split" | "map-only",
+                }),
+              )
+            }
+            options={[
+              { value: "split", label: "左地图 + 右信息" },
+              { value: "map-only", label: "仅地图" },
+            ]}
+            value={props.layout}
+          />
+        </div>
+        <Field
+          label="公司名称"
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, companyName: value }))
+          }
+          value={props.companyName}
+        />
+        <Field
+          label="公司地址"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, address: value }))
+          }
+          value={props.address}
+        />
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field
+            label="联系电话"
+            onChange={(value) =>
+              onChange(section.id, replaceSectionProps(section, { ...props, phone: value }))
+            }
+            value={props.phone}
+          />
+          <Field
+            label="联系邮箱"
+            onChange={(value) =>
+              onChange(section.id, replaceSectionProps(section, { ...props, email: value }))
+            }
+            value={props.email}
+          />
+        </div>
+        <Field
+          label="自定义地图链接（可选）"
+          multiline
+          onChange={(value) =>
+            onChange(section.id, replaceSectionProps(section, { ...props, mapEmbedSrc: value }))
+          }
+          value={props.mapEmbedSrc}
+        />
+        <p className="text-xs leading-6 text-slate-500">
+          为空时将根据地图平台与公司地址自动生成链接；如你已拿到高德/百度嵌入链接，可直接粘贴覆盖。
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <NumberField
+            label="移动端高度（px）"
+            max={680}
+            min={220}
+            onChange={(value) =>
+              onChange(section.id, replaceSectionProps(section, { ...props, heightMobile: value }))
+            }
+            value={props.heightMobile}
+          />
+          <NumberField
+            label="桌面高度（px）"
+            max={880}
+            min={320}
+            onChange={(value) =>
+              onChange(section.id, replaceSectionProps(section, { ...props, heightDesktop: value }))
+            }
+            value={props.heightDesktop}
+          />
+        </div>
       </SectionShell>
     );
   }

@@ -16,6 +16,7 @@ export const defaultPageDocument: BuilderPageDocument = pageDocumentSchema.parse
         label: "首页",
         href: "/sites/homepage",
         slug: "homepage",
+        children: [],
       },
     ],
     footer: {

@@ -2,11 +2,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { EditorFlowNav } from "@/components/builder/editor-flow-nav";
+import { SiteSettingsPanel } from "@/components/builder/site-settings-panel";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
+import { ImageSizeHint } from "@/components/ui/image-size-hint";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,14 +31,16 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
+  buildHeroBannerSelectOptions,
   isDefaultHeroBannerSource,
   normalizeHeroBannerSources,
 } from "@/lib/builder/banner-media";
 import type {
+  BuilderPageListItem,
   BuilderPageResponse,
   BuilderPageStatus,
 } from "@/lib/builder/page-contracts";
-import type { BuilderPageSection } from "@/lib/builder/schema";
+import type { BuilderSiteConfig } from "@/lib/builder/schema";
 import { uploadBrowserFile } from "@/lib/media/client";
 import type {
   SiteNewsCategory,
@@ -54,13 +58,15 @@ type ContentHubProps = {
   initialNewsArticles: SiteNewsSummary[];
   productCategories: SiteProductCategory[];
   newsCategories: SiteNewsCategory[];
+  initialSiteConfig: BuilderSiteConfig;
+  sitePages: BuilderPageListItem[];
   initialHeroBannerSources: string[];
-  initialHomepageHeroBannerSrc: string;
   editorHref?: string;
 };
 
 type HubSection =
   | "overview"
+  | "site-settings"
   | "hero-banners"
   | "products"
   | "news"
@@ -88,15 +94,13 @@ type ConfirmDialogState = {
   actionLabel: string;
   onConfirm: () => void;
 };
+type BannerReference = {
+  pageSlug: string;
+  pageTitle: string;
+  moduleLabel: string;
+};
 
 const pageSize = 8;
-
-function getHeroSection(document: BuilderPageResponse["document"]) {
-  return document.sections.find(
-    (section): section is Extract<BuilderPageSection, { type: "hero" }> =>
-      section.type === "hero",
-  );
-}
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -125,13 +129,55 @@ function buildDraftName(prefix: string) {
   return `${prefix}${date}${seed}`;
 }
 
+function appendBannerReference(
+  map: Record<string, BannerReference[]>,
+  source: string,
+  reference: BannerReference,
+) {
+  if (!source) {
+    return;
+  }
+  const current = map[source] ?? [];
+  map[source] = [...current, reference];
+}
+
+function collectBannerReferences(pages: BuilderPageResponse[]) {
+  const referenceMap: Record<string, BannerReference[]> = {};
+
+  pages.forEach((page) => {
+    page.document.sections.forEach((section) => {
+      if (section.type === "hero") {
+        appendBannerReference(referenceMap, section.props.backgroundImageSrc, {
+          pageSlug: page.slug,
+          pageTitle: page.title,
+          moduleLabel: "首屏横幅模块",
+        });
+        return;
+      }
+
+      if (section.type === "banner-carousel") {
+        section.props.slides.forEach((slideSource) => {
+          appendBannerReference(referenceMap, slideSource, {
+            pageSlug: page.slug,
+            pageTitle: page.title,
+            moduleLabel: "Banner 轮播模块",
+          });
+        });
+      }
+    });
+  });
+
+  return referenceMap;
+}
+
 export function ContentHub({
   initialProducts,
   initialNewsArticles,
   productCategories,
   newsCategories,
+  initialSiteConfig,
+  sitePages,
   initialHeroBannerSources,
-  initialHomepageHeroBannerSrc,
   editorHref = "/editor",
 }: ContentHubProps) {
   const router = useRouter();
@@ -142,14 +188,17 @@ export function ContentHub({
   const [heroBannerSources, setHeroBannerSources] = useState(
     normalizeHeroBannerSources(initialHeroBannerSources),
   );
-  const [homepageHeroBannerSrc, setHomepageHeroBannerSrc] = useState(
-    initialHomepageHeroBannerSrc,
-  );
+  const [savedSiteConfig, setSavedSiteConfig] = useState(initialSiteConfig);
+  const [siteSettingsDraft, setSiteSettingsDraft] = useState(initialSiteConfig);
+  const [bannerPickerOpen, setBannerPickerOpen] = useState(false);
+  const [bannerPreviewSrc, setBannerPreviewSrc] = useState<string | null>(null);
+  const [bannerReferences, setBannerReferences] = useState<Record<string, BannerReference[]>>({});
   const [activeSection, setActiveSection] = useState<HubSection>("overview");
   const [keyword, setKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | RowStatus>("ALL");
   const [productCategoryFilter, setProductCategoryFilter] = useState("ALL");
   const [newsCategoryFilter, setNewsCategoryFilter] = useState("ALL");
+  const [bannerPage, setBannerPage] = useState(1);
   const [productPage, setProductPage] = useState(1);
   const [newsPage, setNewsPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -169,6 +218,28 @@ export function ContentHub({
   const [confirmDialogState, setConfirmDialogState] =
     useState<ConfirmDialogState | null>(null);
   const [isSubmitting, startTransition] = useTransition();
+  const siteSettingsDirty = useMemo(
+    () => JSON.stringify(siteSettingsDraft) !== JSON.stringify(savedSiteConfig),
+    [savedSiteConfig, siteSettingsDraft],
+  );
+  const bannerAssetSources = useMemo(
+    () => Array.from(new Set([...heroBannerSources, ...Object.keys(bannerReferences)])),
+    [bannerReferences, heroBannerSources],
+  );
+  const bannerPickerOptions = useMemo(
+    () =>
+      buildHeroBannerSelectOptions(bannerAssetSources).filter(
+        (option) => !heroBannerSources.includes(option.value),
+      ),
+    [bannerAssetSources, heroBannerSources],
+  );
+  const defaultEditorPageSlug = useMemo(
+    () =>
+      sitePages.find((page) => page.slug === "homepage")?.slug ??
+      sitePages[0]?.slug ??
+      "homepage",
+    [sitePages],
+  );
 
   const stats = useMemo(() => {
     const publishedProducts = products.filter((item) => item.status === "PUBLISHED").length;
@@ -278,6 +349,12 @@ export function ContentHub({
     (safeNewsPage - 1) * pageSize,
     safeNewsPage * pageSize,
   );
+  const bannerTotalPages = Math.max(1, Math.ceil(bannerAssetSources.length / pageSize));
+  const safeBannerPage = Math.min(bannerPage, bannerTotalPages);
+  const paginatedBannerSources = bannerAssetSources.slice(
+    (safeBannerPage - 1) * pageSize,
+    safeBannerPage * pageSize,
+  );
 
   const visibleRows =
     activeSection === "products"
@@ -297,6 +374,7 @@ export function ContentHub({
     setStatusFilter("ALL");
     setProductCategoryFilter("ALL");
     setNewsCategoryFilter("ALL");
+    setBannerPage(1);
   };
 
   const refreshProducts = async () => {
@@ -347,112 +425,167 @@ export function ContentHub({
     return true;
   };
 
-  const refreshHomepageHeroAssets = async () => {
-    const response = await fetch("/api/pages/homepage", { cache: "no-store" });
+  const fetchAllEditablePages = async () => {
+    const pageSnapshots = await Promise.all(
+      sitePages.map(async (page) => {
+        const getResponse = await fetch(`/api/pages/${page.slug}`, { cache: "no-store" });
 
-    if (!response.ok) {
-      return false;
-    }
+        if (!getResponse.ok) {
+          return null;
+        }
 
-    const payload = (await response.json()) as BuilderPageResponse;
-    const heroSection = getHeroSection(payload.document);
-
-    if (!heroSection) {
-      return false;
-    }
-
-    const normalizedSources = normalizeHeroBannerSources(
-      payload.document.site.heroBannerSources,
+        return (await getResponse.json()) as BuilderPageResponse;
+      }),
     );
-    const selectedSource = heroSection.props.backgroundImageSrc;
 
-    setHeroBannerSources(normalizedSources);
-    setHomepageHeroBannerSrc(selectedSource);
+    if (pageSnapshots.some((page) => !page)) {
+      return null;
+    }
+
+    return pageSnapshots as BuilderPageResponse[];
+  };
+
+  const refreshBannerLibrary = async () => {
+    const pageSnapshots = await fetchAllEditablePages();
+
+    if (!pageSnapshots || pageSnapshots.length === 0) {
+      return false;
+    }
+
+    const librarySources = normalizeHeroBannerSources(
+      pageSnapshots[0]?.document.site.heroBannerSources ?? [],
+    );
+    setHeroBannerSources(librarySources);
+    setBannerReferences(collectBannerReferences(pageSnapshots));
+    setSavedSiteConfig((current) => ({
+      ...current,
+      heroBannerSources: librarySources,
+    }));
+    setSiteSettingsDraft((current) => ({
+      ...current,
+      heroBannerSources: librarySources,
+    }));
     return true;
   };
 
-  const saveHomepageHeroAssets = async (input: {
-    nextSources: string[];
-    nextSelected: string;
-  }) => {
-    const getPageResponse = await fetch("/api/pages/homepage", { cache: "no-store" });
+  const saveBannerLibrary = async (nextSources: string[]) => {
+    const normalizedSources = normalizeHeroBannerSources(nextSources);
+    const pageSnapshots = await fetchAllEditablePages();
 
-    if (!getPageResponse.ok) {
+    if (!pageSnapshots) {
       return {
         ok: false,
-        message: "读取首页数据失败，请稍后重试。",
+        message: "读取页面数据失败，请稍后重试。",
       } as const;
     }
 
-    const page = (await getPageResponse.json()) as BuilderPageResponse;
-    const heroIndex = page.document.sections.findIndex((section) => section.type === "hero");
+    const saveResults = await Promise.all(
+      pageSnapshots.map(async (page) => {
+        const saveResponse = await fetch(`/api/pages/${page.slug}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            document: {
+              ...page.document,
+              site: {
+                ...page.document.site,
+                heroBannerSources: normalizedSources,
+              },
+            },
+            status: page.status as BuilderPageStatus,
+          }),
+        });
 
-    if (heroIndex < 0) {
-      return {
-        ok: false,
-        message: "首页未找到首屏横幅模块。",
-      } as const;
-    }
-
-    const nextSources = normalizeHeroBannerSources(input.nextSources);
-    const nextSelected = nextSources.includes(input.nextSelected)
-      ? input.nextSelected
-      : nextSources[0];
-    const nextSections = [...page.document.sections];
-    const currentHero = nextSections[heroIndex];
-
-    if (currentHero.type !== "hero") {
-      return {
-        ok: false,
-        message: "首页首屏横幅模块异常，请刷新后重试。",
-      } as const;
-    }
-
-    nextSections[heroIndex] = {
-      ...currentHero,
-      props: {
-        ...currentHero.props,
-        backgroundImageSrc: nextSelected,
-      },
-    };
-
-    const nextDocument = {
-      ...page.document,
-      site: {
-        ...page.document.site,
-        heroBannerSources: nextSources,
-      },
-      sections: nextSections,
-    };
-
-    const saveResponse = await fetch("/api/pages/homepage", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        document: nextDocument,
-        status: page.status as BuilderPageStatus,
+        return saveResponse.ok;
       }),
-    });
+    );
+    const failedCount = saveResults.filter((ok) => !ok).length;
 
-    const payload = (await saveResponse.json().catch(() => ({}))) as {
-      message?: string;
-    };
-
-    if (!saveResponse.ok) {
+    if (failedCount > 0) {
       return {
         ok: false,
-        message: payload.message ?? "首页横幅更新失败。",
+        message: `Banner 图库保存不完整，失败 ${failedCount} 个页面。`,
       } as const;
     }
 
-    setHeroBannerSources(nextSources);
-    setHomepageHeroBannerSrc(nextSelected);
+    setHeroBannerSources(normalizedSources);
+    setSavedSiteConfig((current) => ({
+      ...current,
+      heroBannerSources: normalizedSources,
+    }));
+    setSiteSettingsDraft((current) => ({
+      ...current,
+      heroBannerSources: normalizedSources,
+    }));
+    await refreshBannerLibrary();
 
     return {
       ok: true,
-      message: "首屏横幅素材已更新。",
+      message: "Banner 图库已更新。",
+    } as const;
+  };
+
+  const saveSiteSettingsAcrossPages = async (nextSite: BuilderSiteConfig) => {
+    const normalizedSite = {
+      ...nextSite,
+      heroBannerSources: normalizeHeroBannerSources(nextSite.heroBannerSources),
+    };
+    const pageSnapshots = await Promise.all(
+      sitePages.map(async (page) => {
+        const getResponse = await fetch(`/api/pages/${page.slug}`, { cache: "no-store" });
+
+        if (!getResponse.ok) {
+          return null;
+        }
+
+        return (await getResponse.json()) as BuilderPageResponse;
+      }),
+    );
+
+    if (pageSnapshots.some((page) => !page)) {
+      return {
+        ok: false,
+        message: "读取页面数据失败，请稍后重试。",
+      } as const;
+    }
+
+    const saveResults = await Promise.all(
+      pageSnapshots.map(async (page) => {
+        const currentPage = page as BuilderPageResponse;
+        const patchResponse = await fetch(`/api/pages/${currentPage.slug}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            document: {
+              ...currentPage.document,
+              site: normalizedSite,
+            },
+            status: currentPage.status as BuilderPageStatus,
+          }),
+        });
+
+        return patchResponse.ok;
+      }),
+    );
+    const failedCount = saveResults.filter((ok) => !ok).length;
+
+    if (failedCount > 0) {
+      return {
+        ok: false,
+        message: `全站设置保存不完整，失败 ${failedCount} 个页面。`,
+      } as const;
+    }
+
+    setSavedSiteConfig(normalizedSite);
+    setSiteSettingsDraft(normalizedSite);
+
+    return {
+      ok: true,
+      message: "全站公共配置已保存。",
     } as const;
   };
 
@@ -542,16 +675,13 @@ export function ContentHub({
     });
   };
 
-  const handleSelectHomepageBanner = (source: string) => {
+  const handleAddBannerFromLibrary = (source: string) => {
+    const nextSources = normalizeHeroBannerSources([...heroBannerSources, source]);
     startTransition(async () => {
-      const result = await saveHomepageHeroAssets({
-        nextSources: heroBannerSources,
-        nextSelected: source,
-      });
-
+      const result = await saveBannerLibrary(nextSources);
       setMessage(result.message);
-
       if (result.ok) {
+        setBannerPickerOpen(false);
         router.refresh();
       }
     });
@@ -567,14 +697,12 @@ export function ContentHub({
     startTransition(async () => {
       try {
         const url = await uploadBrowserFile(file, "blocks");
-        const result = await saveHomepageHeroAssets({
-          nextSources: [...heroBannerSources, url],
-          nextSelected: url,
-        });
+        const result = await saveBannerLibrary([...heroBannerSources, url]);
 
         setMessage(result.message);
 
         if (result.ok) {
+          setBannerPickerOpen(false);
           router.refresh();
         }
       } catch (error) {
@@ -584,17 +712,8 @@ export function ContentHub({
   };
 
   const handleRemoveCustomBanner = (source: string) => {
-    const nextSources = normalizeHeroBannerSources(
-      heroBannerSources.filter((item) => item !== source),
-    );
-    const fallbackSource =
-      homepageHeroBannerSrc === source ? nextSources[0] : homepageHeroBannerSrc;
-
     startTransition(async () => {
-      const result = await saveHomepageHeroAssets({
-        nextSources,
-        nextSelected: fallbackSource,
-      });
+      const result = await saveBannerLibrary(heroBannerSources.filter((item) => item !== source));
 
       setMessage(result.message);
 
@@ -603,6 +722,28 @@ export function ContentHub({
       }
     });
   };
+
+  const handleSaveSiteSettings = () => {
+    startTransition(async () => {
+      const result = await saveSiteSettingsAcrossPages(siteSettingsDraft);
+      setMessage(result.message);
+
+      if (result.ok) {
+        router.refresh();
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (activeSection !== "hero-banners") {
+      return;
+    }
+
+    startTransition(async () => {
+      await refreshBannerLibrary();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection]);
 
   const executeDeleteRow = (kind: CategoryKind, slug: string) => {
     const endpoint = kind === "products" ? "products" : "news";
@@ -886,7 +1027,7 @@ export function ContentHub({
   return (
     <main className="editor-radius-half min-h-screen bg-[var(--background)] lg:h-screen lg:overflow-hidden">
       <EditorFlowNav activeStep="content" editorHref={editorHref} />
-      <div className="grid min-h-screen lg:h-full lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="grid min-h-screen lg:h-full lg:grid-cols-[232px_minmax(0,1fr)]">
         <aside className="border-b border-[var(--border)] bg-[var(--card)] px-3 py-4 lg:h-full lg:overflow-hidden lg:border-b-0 lg:border-r">
           <div className="flex h-full flex-col">
             <div className="rounded-lg bg-[var(--muted)] px-3 py-2">
@@ -913,24 +1054,39 @@ export function ContentHub({
               </button>
               <button
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                  activeSection === "site-settings"
+                    ? "bg-[var(--primary-soft)] text-[var(--primary-strong)]"
+                    : "text-[var(--foreground)] hover:bg-[var(--muted)]"
+                }`}
+                onClick={() => resetTableControls("site-settings")}
+                type="button"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <span aria-hidden>⚙</span>
+                  全站设置
+                </span>
+              </button>
+              <button
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${
                   activeSection === "hero-banners"
                     ? "bg-[var(--primary-soft)] text-[var(--primary-strong)]"
                     : "text-[var(--foreground)] hover:bg-[var(--muted)]"
                 }`}
                 onClick={() => {
                   resetTableControls("hero-banners");
+                  setBannerPage(1);
                   startTransition(async () => {
-                    await refreshHomepageHeroAssets();
+                    await refreshBannerLibrary();
                   });
                 }}
                 type="button"
               >
                 <span className="inline-flex items-center gap-2">
                   <span aria-hidden>▣</span>
-                  首屏横幅
+                  Banner图管理
                 </span>
                 <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
-                  {heroBannerSources.length}
+                  {bannerAssetSources.length}
                 </span>
               </button>
               <button
@@ -1004,6 +1160,20 @@ export function ContentHub({
             </div>
 
             <div className="mt-4 grid gap-2 lg:mt-auto">
+              <Link
+                className="inline-flex h-8 w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                href={`/editor/pages/${defaultEditorPageSlug}`}
+              >
+                页面编辑
+              </Link>
+              <a
+                className="inline-flex h-8 w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                href="/sites/homepage"
+                rel="noreferrer"
+                target="_blank"
+              >
+                预览官网
+              </a>
               <div className="flex items-center justify-between rounded-md border border-[var(--border)] bg-[var(--card)] px-2 py-1.5">
                 <span className="text-xs text-[var(--muted-foreground)]">主题</span>
                 <BrandThemeSwitcher />
@@ -1199,81 +1369,104 @@ export function ContentHub({
               </div>
             ) : null}
 
+            {activeSection === "site-settings" ? (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-sm md:p-4 lg:flex lg:h-[calc(100vh-72px)] lg:min-h-0 lg:flex-col">
+                <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="text-base font-semibold text-[var(--foreground)]">全站公共配置</h2>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      包含公司信息、导航菜单和公共底部配置，保存后会同步到所有页面。
+                    </p>
+                  </div>
+                  <Button
+                    disabled={!siteSettingsDirty || isSubmitting}
+                    onClick={handleSaveSiteSettings}
+                    size="sm"
+                    type="button"
+                  >
+                    {isSubmitting ? "保存中..." : "保存全站设置"}
+                  </Button>
+                </div>
+
+                <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
+                  <SiteSettingsPanel
+                    onChange={setSiteSettingsDraft}
+                    site={siteSettingsDraft}
+                    sitePages={sitePages}
+                  />
+                </div>
+              </div>
+            ) : null}
+
             {activeSection === "hero-banners" ? (
               <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm">
                 <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-base font-semibold text-[var(--foreground)]">首屏横幅管理</h2>
+                    <h2 className="text-base font-semibold text-[var(--foreground)]">Banner图管理</h2>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      支持上传新图，也可从默认 6 张横幅中选择。这里的选择会同步到首页首屏横幅模块。
+                      统一管理首屏横幅与 Banner 轮播引用素材，支持选择已有图片或上传新图。
                     </p>
                   </div>
-                  <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)]">
-                    上传横幅
-                    <input
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => {
-                        handleUploadHomepageBanner(event.target.files);
-                        event.target.value = "";
-                      }}
-                      type="file"
-                    />
-                  </label>
+                  <Button onClick={() => setBannerPickerOpen(true)} size="sm" type="button">
+                    新增 Banner 图
+                  </Button>
                 </div>
+                <ImageSizeHint className="-mt-2 mb-3" guideKey="heroBanner" />
 
                 <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-xs text-[var(--muted-foreground)]">
-                  当前首页横幅：<span className="font-medium text-[var(--foreground)]">{homepageHeroBannerSrc}</span>
+                  图库数量：
+                  <span className="font-medium text-[var(--foreground)]"> {bannerAssetSources.length}</span>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {heroBannerSources.map((source) => {
-                    const isSelected = source === homepageHeroBannerSrc;
+                  {paginatedBannerSources.map((source) => {
+                    const references = bannerReferences[source] ?? [];
+                    const canDelete = heroBannerSources.includes(source);
                     const isDefault = isDefaultHeroBannerSource(source);
 
                     return (
-                      <article
-                        className={`rounded-xl border p-3 ${
-                          isSelected
-                            ? "border-[var(--primary)] bg-[var(--primary-soft)]"
-                            : "border-[var(--border)] bg-[var(--card)]"
-                        }`}
-                        key={source}
-                      >
-                        <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--muted)]">
+                      <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3" key={source}>
+                        <button
+                          className="w-full overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--muted)]"
+                          onClick={() => setBannerPreviewSrc(source)}
+                          type="button"
+                        >
                           <img
-                            alt="首屏横幅"
+                            alt="Banner 图"
                             className="h-40 w-full object-cover"
                             src={source}
                           />
-                        </div>
+                        </button>
 
-                        <div className="mt-3 flex items-center justify-between gap-2">
+                        <div className="mt-3 flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-[var(--foreground)]">
-                              {isDefault ? "默认横幅" : "自定义横幅"}
+                              {isDefault ? "默认 Banner 图" : "自定义 Banner 图"}
                             </p>
                             <p className="truncate text-xs text-[var(--muted-foreground)]">
                               {source}
                             </p>
                           </div>
-                          {isSelected ? (
-                            <span className="rounded-md bg-[var(--primary)] px-2 py-1 text-xs font-medium text-[var(--primary-foreground)]">
-                              当前
-                            </span>
-                          ) : null}
+                        </div>
+
+                        <div className="mt-2 space-y-1 rounded-lg border border-[var(--border)] bg-[var(--muted)] p-2">
+                          <p className="text-xs font-medium text-[var(--foreground)]">引用位置</p>
+                          {references.length === 0 ? (
+                            <p className="text-xs text-[var(--muted-foreground)]">未被页面模块引用</p>
+                          ) : (
+                            references.map((reference, referenceIndex) => (
+                              <p
+                                className="truncate text-xs text-[var(--muted-foreground)]"
+                                key={`${source}-ref-${reference.pageSlug}-${reference.moduleLabel}-${referenceIndex}`}
+                              >
+                                {reference.pageTitle}（/{reference.pageSlug}） · {reference.moduleLabel}
+                              </p>
+                            ))
+                          )}
                         </div>
 
                         <div className="mt-3 flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant={isSelected ? "secondary" : "default"}
-                            onClick={() => handleSelectHomepageBanner(source)}
-                            type="button"
-                          >
-                            {isSelected ? "已生效" : "设为首页横幅"}
-                          </Button>
-                          {!isDefault ? (
+                          {canDelete ? (
                             <Button
                               className="border-rose-200 text-rose-700 hover:bg-rose-50"
                               size="sm"
@@ -1281,13 +1474,34 @@ export function ContentHub({
                               onClick={() => handleRemoveCustomBanner(source)}
                               type="button"
                             >
-                              删除
+                              从图库移除
                             </Button>
                           ) : null}
                         </div>
                       </article>
                     );
                   })}
+                </div>
+                <div className="mt-4 flex items-center justify-end gap-2 text-sm">
+                  <button
+                    className="rounded-md border border-[var(--border)] px-3 py-1.5 text-[var(--foreground)] disabled:opacity-40"
+                    disabled={safeBannerPage === 1}
+                    onClick={() => setBannerPage((value) => Math.max(1, value - 1))}
+                    type="button"
+                  >
+                    上一页
+                  </button>
+                  <span className="text-[var(--muted-foreground)]">
+                    第 {safeBannerPage} / {bannerTotalPages} 页
+                  </span>
+                  <button
+                    className="rounded-md border border-[var(--border)] px-3 py-1.5 text-[var(--foreground)] disabled:opacity-40"
+                    disabled={safeBannerPage === bannerTotalPages}
+                    onClick={() => setBannerPage((value) => Math.min(bannerTotalPages, value + 1))}
+                    type="button"
+                  >
+                    下一页
+                  </button>
                 </div>
               </div>
             ) : null}
@@ -1360,18 +1574,6 @@ export function ContentHub({
                         </option>
                       ))}
                     </select>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        setKeyword("");
-                        setStatusFilter("ALL");
-                        setProductCategoryFilter("ALL");
-                      }}
-                      type="button"
-                    >
-                      重置
-                    </Button>
                   </div>
                 </div>
 
@@ -1551,18 +1753,6 @@ export function ContentHub({
                         </option>
                       ))}
                     </select>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        setKeyword("");
-                        setStatusFilter("ALL");
-                        setNewsCategoryFilter("ALL");
-                      }}
-                      type="button"
-                    >
-                      重置
-                    </Button>
                   </div>
                 </div>
 
@@ -1824,6 +2014,77 @@ export function ContentHub({
           </div>
         </section>
       </div>
+
+      <Dialog onOpenChange={setBannerPickerOpen} open={bannerPickerOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>新增 Banner 图</DialogTitle>
+            <DialogDescription>可从已有图库选择，或上传新图。</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <ImageSizeHint guideKey="heroBanner" />
+            <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)]">
+              上传新图
+              <input
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  handleUploadHomepageBanner(event.target.files);
+                  event.target.value = "";
+                }}
+                type="file"
+              />
+            </label>
+          </div>
+
+          <div className="max-h-[50vh] overflow-y-auto rounded-lg border border-[var(--border)] p-2">
+            {bannerPickerOptions.length === 0 ? (
+              <p className="px-2 py-6 text-center text-sm text-[var(--muted-foreground)]">
+                暂无可选图片
+              </p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {bannerPickerOptions.map((option) => (
+                  <button
+                    className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-left transition hover:border-[var(--ring)] hover:bg-[var(--muted)]"
+                    key={option.value}
+                    onClick={() => handleAddBannerFromLibrary(option.value)}
+                    type="button"
+                  >
+                    <img
+                      alt="banner option"
+                      className="h-14 w-24 rounded-md border border-[var(--border)] object-cover"
+                      src={option.value}
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium text-[var(--foreground)]">
+                        {option.label}
+                      </p>
+                      <p className="truncate text-[11px] text-[var(--muted-foreground)]">
+                        {option.value}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog onOpenChange={(open) => !open && setBannerPreviewSrc(null)} open={Boolean(bannerPreviewSrc)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Banner 图预览</DialogTitle>
+          </DialogHeader>
+          {bannerPreviewSrc ? (
+            <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--muted)]">
+              <img alt="banner preview" className="max-h-[70vh] w-full object-contain" src={bannerPreviewSrc} />
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         onOpenChange={(open) => {

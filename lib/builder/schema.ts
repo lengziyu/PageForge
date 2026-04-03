@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { bannerCarouselSectionSchema } from "@/lib/builder/blocks/banner-carousel";
 import { defaultHeroBannerSources } from "@/lib/builder/banner-media";
 import { ctaSectionSchema } from "@/lib/builder/blocks/cta";
 import { companyIntroSectionSchema } from "@/lib/builder/blocks/company-intro";
@@ -6,6 +7,7 @@ import { contactMethodsSectionSchema } from "@/lib/builder/blocks/contact-method
 import { faqSectionSchema } from "@/lib/builder/blocks/faq";
 import { featureListSectionSchema } from "@/lib/builder/blocks/feature-list";
 import { heroSectionSchema } from "@/lib/builder/blocks/hero";
+import { locationMapSectionSchema } from "@/lib/builder/blocks/location-map";
 import { newsListSectionSchema } from "@/lib/builder/blocks/news-list";
 import { partnersSectionSchema } from "@/lib/builder/blocks/partners";
 import { serviceGridSectionSchema } from "@/lib/builder/blocks/service-grid";
@@ -17,6 +19,7 @@ import {
   createSiteConfig,
   footerTemplateCatalog,
   navigationTemplateCatalog,
+  scrollAnimationPresetCatalog,
 } from "@/lib/builder/site-config";
 import { PAGEFORGE_DEFAULT_SITE_NAME } from "@/lib/brand/identity";
 
@@ -24,6 +27,15 @@ export const siteNavigationLinkSchema = z.object({
   label: z.string().min(1),
   href: z.string().min(1),
   slug: z.string().min(1),
+  children: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        href: z.string().min(1),
+        slug: z.string().min(1),
+      }),
+    )
+    .default([]),
 });
 
 export const siteFooterSchema = z.object({
@@ -42,11 +54,13 @@ export const siteFooterSchema = z.object({
 
 export const pageSectionSchema = z.discriminatedUnion("type", [
   heroSectionSchema,
+  bannerCarouselSectionSchema,
   statsStripSectionSchema,
   featureListSectionSchema,
   serviceGridSectionSchema,
   techHighlightsSectionSchema,
   newsListSectionSchema,
+  locationMapSectionSchema,
   companyIntroSectionSchema,
   contactMethodsSectionSchema,
   ctaSectionSchema,
@@ -64,6 +78,16 @@ export const pageDocumentSchema = z.object({
     logoSrc: z.string().default(""),
     faviconSrc: z.string().default(""),
     heroBannerSources: z.array(z.string().min(1)).default(defaultHeroBannerSources),
+    scrollAnimationEnabled: z.boolean().default(true),
+    scrollAnimationPreset: z
+      .enum(
+        scrollAnimationPresetCatalog.map((preset) => preset.id) as [
+          (typeof scrollAnimationPresetCatalog)[number]["id"],
+          ...(typeof scrollAnimationPresetCatalog)[number]["id"][],
+        ],
+      )
+      .default("rise"),
+    scrollAnimationDurationMs: z.number().int().min(300).max(5000).default(1500),
     navigationTemplate: z
       .enum(
         navigationTemplateCatalog.map((template) => template.id) as [

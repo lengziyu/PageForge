@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { RichTextEditor } from "@/components/news/rich-text-editor";
 import { BrandThemeSwitcher } from "@/components/theme/brand-theme-switcher";
+import { ImageSizeHint } from "@/components/ui/image-size-hint";
 import { uploadBrowserFile } from "@/lib/media/client";
 import type {
   SiteProduct,
@@ -205,6 +206,7 @@ export function ProductEditor({
 
                 <label className="space-y-2 md:col-span-4">
                   <span className="text-sm font-medium text-slate-700">上传封面图</span>
+                  <ImageSizeHint guideKey="productCover" />
                   <input
                     accept="image/*"
                     className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-[var(--primary-foreground)]"
@@ -226,6 +228,7 @@ export function ProductEditor({
                   </div>
                   <label className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700">
                     上传图集
+                    <ImageSizeHint className="mt-1" guideKey="productGallery" />
                     <input
                       accept="image/*"
                       className="hidden"

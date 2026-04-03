@@ -27,16 +27,9 @@ export default async function EditorContentHubPage() {
     getEditablePageBySlug("homepage"),
   ]);
   const hasDatabasePages = pages.some((page) => page.source === "database");
-  const homepageHeroSection = homepage.document.sections.find(
-    (section) => section.type === "hero",
-  );
   const initialHeroBannerSources = normalizeHeroBannerSources(
     homepage.document.site.heroBannerSources,
   );
-  const initialHomepageHeroBannerSrc =
-    homepageHeroSection?.type === "hero"
-      ? homepageHeroSection.props.backgroundImageSrc
-      : initialHeroBannerSources[0];
 
   if (!hasDatabasePages) {
     redirect("/editor/start");
@@ -46,11 +39,12 @@ export default async function EditorContentHubPage() {
     <ContentHub
       editorHref="/editor"
       initialHeroBannerSources={initialHeroBannerSources}
-      initialHomepageHeroBannerSrc={initialHomepageHeroBannerSrc}
       initialNewsArticles={newsArticles}
       initialProducts={products}
+      initialSiteConfig={homepage.document.site}
       newsCategories={newsCategories}
       productCategories={productCategories}
+      sitePages={pages}
     />
   );
 }
